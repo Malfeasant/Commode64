@@ -9,7 +9,5 @@ public interface Port {
 		void release();
 	}
 	interface RW extends R, W {
-		int getDir();
-		void setDir(int d);
 	}
 }

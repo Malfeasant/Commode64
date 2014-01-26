@@ -7,7 +7,7 @@ public class VIC {
 	public VIC() {
 	}
 	public int regAccess(CPURequest request) {
-		int index = request.address & 0x3f;
-		return regs.access(index, request.data, request.write);
+		int addr = request.address & 0x3f;
+		return regs.access(addr, request.data, request.write);
 	}
 }

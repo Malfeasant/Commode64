@@ -199,13 +199,13 @@ class RegisterBank {
 		}, VMCSB {
 			@Override
 			protected int access(RegisterBank env, int data, boolean wr) {
-				if (wr) {	// TODO - maybe prefer to store as expanded address?
-					env.charBase = (data & 0xe) >> 1;
-					env.vmBase = (data & 0xf0) >> 4;
+				if (wr) {
+					env.charBase = (data & 0xe) << 10;
+					env.vmBase = (data & 0xf0) << 6;
 				} else {
 					data = 1;	// unused bit
-					data |= env.charBase << 1;
-					data |= env.vmBase << 4;
+					data |= env.charBase >> 10;
+					data |= env.vmBase >> 6;
 				}
 				return data;
 			}

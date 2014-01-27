@@ -1,13 +1,55 @@
 package us.malfeasant.commode64.vic;
 
 import us.malfeasant.commode64.CPURequest;
+import us.malfeasant.commode64.VICRequest;
 
-public class VIC {
+public abstract class VIC {
 	private final RegisterBank regs = new RegisterBank();
-	public VIC() {
+	private final Revision rev;
+	
+	public VIC(Revision r) {
+		if (r == null) throw new NullPointerException();
+		rev = r;
 	}
+	
 	public int regAccess(CPURequest request) {
 		int addr = request.address & 0x3f;
 		return regs.access(addr, request.data, request.write);
 	}
+	
+	private int cycle;
+	private int line;
+	private boolean active;	// true when within display window, false outside
+	private int vc;	// video counter
+	private int vcbase;
+	private int rc;	// row counter
+	private final int[] lineBuffer = new int[40];	// holds text characters for multiple lines 
+	private int vmli;	// index into the above
+	private boolean ba;	// halts the cpu when we need to steal cycles
+	
+	public void tick() {
+		
+	}
+	private void cCycle() {	// always the same no matter what mode, but only happens every 8 lines
+		int addr = regs.vmBase | vc;
+		lineBuffer[vmli] = sendRequest(new VICRequest(addr, ba));
+	}
+	private void gCycle() {	// happens every line, mode affects interpretation
+		int text = lineBuffer[vmli] & 0xff;
+		int color = lineBuffer[vmli] >> 8;
+		int addr = regs.charBase;
+		if (regs.bmEn) {
+			addr &= 0x2000;
+			addr |= vc << 3;
+		} else {
+			addr |= text << 3;
+		}
+		if (regs.extEn) {
+			addr &= ~0x600;
+		}
+		addr |= rc;
+		int data = sendRequest(new VICRequest(addr, ba));
+		
+	}
+	protected abstract int sendRequest(VICRequest req);
 }

@@ -10,6 +10,6 @@ class SpriteControl {
 	boolean multicolor;
 	boolean collideS;
 	boolean collideFG;
-	int color;	// possibly replace this with a Color enum?
+	Color color;
 	int data;	// this is stored in RAM at the end of text matrix, but is looked up once per line and held
 }

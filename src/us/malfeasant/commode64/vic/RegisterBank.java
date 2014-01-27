@@ -8,43 +8,43 @@ class RegisterBank {
 	
 	// 00 - 10
 	// sprite x & y managed by SpriteControl[]
-	private final SpriteControl[] spriteControl = new SpriteControl[SPRITES];
+	final SpriteControl[] spriteControl = new SpriteControl[SPRITES];
 	// 11
-	private int fineY;
-	private boolean row25;
-	private boolean dEn;
-	private boolean bmEn;
-	private boolean extEn;
+	int fineY;
+	boolean row25;
+	boolean dEn;
+	boolean bmEn;
+	boolean extEn;
 	// 11 & 12
-	private int rasterComp;	// write causes interrupt when raster reaches this point
-	private int raster;	// reads current line
+	int rasterComp;	// write causes interrupt when raster reaches this point
+	int raster;	// reads current line
 	// 13
-	private int lpX;
+	int lpX;
 	// 14
-	private int lpY;
+	int lpY;
 	// 15
 	// sprite enable managed by SpriteControl[]
 	// 16
-	private int fineX;
-	private boolean col40;
-	private boolean mcEn;
-	private boolean reset;
+	int fineX;
+	boolean col40;
+	boolean mcEn;
+	boolean reset;
 	// 17
 	// sprite vert expand managed by SpriteControl[]
 	// 18
-	private int charBase;
-	private int vmBase;
+	int charBase;
+	int vmBase;
 	// 19
-	private boolean irqRaster;
-	private boolean irqSpFg;
-	private boolean irqSpSp;
-	private boolean irqLP;
-	private boolean irqAny;
+	boolean irqRaster;
+	boolean irqSpFg;
+	boolean irqSpSp;
+	boolean irqLP;
+	boolean irqAny;
 	// 1a
-	private boolean enRaster;
-	private boolean enSpFg;
-	private boolean enSpSp;
-	private boolean enLp;
+	boolean enRaster;
+	boolean enSpFg;
+	boolean enSpSp;
+	boolean enLp;
 	// 1b
 	// sprite to forground priority managed by SpriteControl[]
 	// 1c
@@ -56,7 +56,7 @@ class RegisterBank {
 	// 1f
 	// sprite-forground collision managed by SpriteControl[]
 	// 20 - 26
-	private final Map<Reg, Integer> colors;
+	final Map<Reg, Color> colors;
 	// 27 - 2e
 	// sprite colors managed by SpriteControl[]
 	
@@ -66,7 +66,7 @@ class RegisterBank {
 		}
 		colors = new EnumMap<>(Reg.class);
 		for (int i = 0x20; i < 0x27; i++) {
-			colors.put(Reg.values()[i], 0);
+			colors.put(Reg.values()[i], Color.BLACK);
 		}
 	}
 	int access(int addr, int data, boolean wr) {
@@ -364,16 +364,16 @@ class RegisterBank {
 		}
 		private int spriteColor(SpriteControl sc, int data, boolean wr) {
 			if (wr)
-				sc.color = data & 0xf;
+				sc.color = Color.values()[data & 0xf];
 			else
-				data = sc.color | 0xf0;	// high bits unconnected, so read high
+				data = sc.color.ordinal() | 0xf0;	// high bits unconnected, so read high
 			return data;
 		}
 		private int color(RegisterBank env, int data, boolean wr) {
 			if (wr)
-				env.colors.put(this, data & 0xf);
+				env.colors.put(this, Color.values()[data & 0xf]);
 			else
-				data = env.colors.get(this) | 0xf0;
+				data = env.colors.get(this).ordinal() | 0xf0;
 			return data;
 		}
 	}

@@ -1,5 +1,8 @@
 package us.malfeasant.commode64.vic;
 
+import java.util.EnumMap;
+import java.util.Map;
+
 class RegisterBank {
 	private static final int SPRITES = 8;
 	
@@ -42,18 +45,38 @@ class RegisterBank {
 	private boolean enSpFg;
 	private boolean enSpSp;
 	private boolean enLp;
+	// 1b
+	// sprite to forground priority managed by SpriteControl[]
+	// 1c
+	// sprite multicolor enable managed by SpriteControl[]
+	// 1d
+	// sprite xexpand enable managed by SpriteControl[]
+	// 1e
+	// sprite-sprite collision managed by SpriteControl[]
+	// 1f
+	// sprite-forground collision managed by SpriteControl[]
+	// 20 - 26
+	private final Map<Reg, Integer> colors;
+	// 27 - 2e
+	// sprite colors managed by SpriteControl[]
 	
 	RegisterBank() {
 		for (int i = 0; i < spriteControl.length; i++) {
 			spriteControl[i] = new SpriteControl();
+		}
+		colors = new EnumMap<>(Reg.class);
+		for (int i = 0x20; i < 0x27; i++) {
+			colors.put(Reg.values()[i], 0);
 		}
 	}
 	int access(int addr, int data, boolean wr) {
 		return (addr < Reg.values().length) ? Reg.values()[addr].access(this, data, wr) : -1;
 	}
 	private enum Reg {
-		SP0X, SP0Y, SP1X, SP1Y, SP2X, SP2Y, SP3X, SP3Y,
-		SP4X, SP4Y, SP5X, SP5Y, SP6X, SP6Y, SP7X, SP7Y,
+		SP0X(Type.XPOS), SP0Y(Type.YPOS), SP1X(Type.XPOS), SP1Y(Type.YPOS),
+		SP2X(Type.XPOS), SP2Y(Type.YPOS), SP3X(Type.XPOS), SP3Y(Type.YPOS),
+		SP4X(Type.XPOS), SP4Y(Type.YPOS), SP5X(Type.XPOS), SP5Y(Type.YPOS),
+		SP6X(Type.XPOS), SP6Y(Type.YPOS), SP7X(Type.XPOS), SP7Y(Type.YPOS),
 		MSIGX {
 			@Override
 			protected int access(RegisterBank env, int data, boolean wr) {
@@ -210,138 +233,118 @@ class RegisterBank {
 				}
 				return data;
 			}
-		}, SPBGPR {
+		}, SPFGPR {
 			@Override
 			protected int access(RegisterBank env, int data, boolean wr) {
-				if (wr) {
-					
-				} else {
-					
+				int weight = 1;
+				for (SpriteControl sc : env.spriteControl) {
+					if (wr) {
+						sc.behind = (data & weight) != 0;
+					} else {
+						if (sc.behind)
+							data |= weight;
+						else
+							data &= ~weight;
+					}
+					weight <<= 1;
 				}
 				return data;
 			}
 		}, SPMC {
 			@Override
 			protected int access(RegisterBank env, int data, boolean wr) {
-				if (wr) {
-					
-				} else {
-					
+				int weight = 1;
+				for (SpriteControl sc : env.spriteControl) {
+					if (wr) {
+						sc.multicolor = (data & weight) != 0;
+					} else {
+						if (sc.multicolor)
+							data |= weight;
+						else
+							data &= ~weight;
+					}
+					weight <<= 1;
 				}
 				return data;
 			}
 		}, XXPAND {
 			@Override
 			protected int access(RegisterBank env, int data, boolean wr) {
-				if (wr) {
-					
-				} else {
-					
+				int weight = 1;
+				for (SpriteControl sc : env.spriteControl) {
+					if (wr) {
+						sc.expandX = (data & weight) != 0;
+					} else {
+						if (sc.expandX)
+							data |= weight;
+						else
+							data &= ~weight;
+					}
+					weight <<= 1;
 				}
 				return data;
 			}
 		}, SPSPCL {
 			@Override
 			protected int access(RegisterBank env, int data, boolean wr) {
-				if (wr) {
-					
-				} else {
-					
+				int weight = 1;
+				for (SpriteControl sc : env.spriteControl) {
+					if (sc.collideS) {
+						data |= weight;
+						sc.collideS = false;
+					} else
+						data &= ~weight;
+					weight <<= 1;
 				}
 				return data;
 			}
 		}, SPBGCL {
 			@Override
 			protected int access(RegisterBank env, int data, boolean wr) {
-				if (wr) {
-					
-				} else {
-					
+				int weight = 1;
+				for (SpriteControl sc : env.spriteControl) {
+					if (sc.collideFG) {
+						data |= weight;
+						sc.collideFG = false;
+					} else
+						data &= ~weight;
+					weight <<= 1;
 				}
 				return data;
 			}
-		}, EXTCOL {
-			@Override
-			protected int access(RegisterBank env, int data, boolean wr) {
-				if (wr) {
-					
-				} else {
-					
-				}
-				return data;
-			}
-		}, BGCOL0 {
-			@Override
-			protected int access(RegisterBank env, int data, boolean wr) {
-				if (wr) {
-					
-				} else {
-					
-				}
-				return data;
-			}
-		}, BGCOL1 {
-			@Override
-			protected int access(RegisterBank env, int data, boolean wr) {
-				if (wr) {
-					
-				} else {
-					
-				}
-				return data;
-			}
-		}, BGCOL2 {
-			@Override
-			protected int access(RegisterBank env, int data, boolean wr) {
-				if (wr) {
-					
-				} else {
-					
-				}
-				return data;
-			}
-		}, BGCOL3 {
-			@Override
-			protected int access(RegisterBank env, int data, boolean wr) {
-				if (wr) {
-					
-				} else {
-					
-				}
-				return data;
-			}
-		}, SPMC0 {
-			@Override
-			protected int access(RegisterBank env, int data, boolean wr) {
-				if (wr) {
-					
-				} else {
-					
-				}
-				return data;
-			}
-		}, SPMC1 {
-			@Override
-			protected int access(RegisterBank env, int data, boolean wr) {
-				if (wr) {
-					
-				} else {
-					
-				}
-				return data;
-			}
-		}, SP0COL, SP1COL, SP2COL, SP3COL, SP4COL, SP5COL, SP6COL, SP7COL;
+		},
+		EXTCOL(Type.COLOR), BGCOL0(Type.COLOR), BGCOL1(Type.COLOR), BGCOL2(Type.COLOR),
+		BGCOL3(Type.COLOR), SPMC0(Type.COLOR), SPMC1(Type.COLOR),
+		SP0COL(Type.SCOLOR), SP1COL(Type.SCOLOR), SP2COL(Type.SCOLOR), SP3COL(Type.SCOLOR),
+		SP4COL(Type.SCOLOR), SP5COL(Type.SCOLOR), SP6COL(Type.SCOLOR), SP7COL(Type.SCOLOR);
+		private enum Type {
+			XPOS, YPOS, COLOR, SCOLOR, SPECIAL;
+		}
+		private final Type type;
+		Reg(Type t) {
+			type = t;
+		}
+		Reg() {
+			this(Type.SPECIAL);
+		}
 		protected int access(RegisterBank env, int data, boolean wr) {
 			int addr = ordinal();
-			if ((addr & 0xf0) == 0) {	// sprite positions
-				SpriteControl sc = env.spriteControl[addr >> 1];
-				if ((addr & 1) == 0) {	// X position
-					data = spriteLoX(sc, data, wr);
-				} else {	// Y
-					data = spriteY(sc, data, wr);
-				}
-			} else if (addr > SP0COL.ordinal()) {	// sprite color
-				data = spriteColor(env.spriteControl[addr - Reg.SP0COL.ordinal()], data, wr);
+			switch (type) {
+			case XPOS:
+				data = spriteLoX(env.spriteControl[addr >> 1], data, wr);
+				break;
+			case YPOS:
+				data = spriteY(env.spriteControl[addr >> 1], data, wr);
+				break;
+			case COLOR:
+				data = color(env, data, wr);
+				break;
+			case SCOLOR:
+				data = spriteColor(env.spriteControl[addr - SP0COL.ordinal()], data, wr);
+				break;
+			case SPECIAL:
+				// should not reach this, these override access()
+				break;
 			}
 			return data;
 		}
@@ -364,6 +367,13 @@ class RegisterBank {
 				sc.color = data & 0xf;
 			else
 				data = sc.color | 0xf0;	// high bits unconnected, so read high
+			return data;
+		}
+		private int color(RegisterBank env, int data, boolean wr) {
+			if (wr)
+				env.colors.put(this, data & 0xf);
+			else
+				data = env.colors.get(this) | 0xf0;
 			return data;
 		}
 	}

@@ -36,9 +36,6 @@ public abstract class VIC {
 		lineBuffer[vmli] = sendRequest(new VICRequest(addr, ba));
 	}
 	private void gCycle() {	// happens every line, mode affects interpretation
-		int mode = (regs.extEn ? 4 : 0) | (regs.bmEn ? 2 : 0) | (regs.mcEn ? 1 : 0);
-		int text = lineBuffer[vmli] & 0xff;
-		int cram = lineBuffer[vmli] >> 8;
 		int addr;
 		if (active) {
 			addr = regs.charBase;
@@ -46,7 +43,7 @@ public abstract class VIC {
 				addr &= 0x2000;
 				addr |= vc << 3;
 			} else {
-				addr |= text << 3;
+				addr |= (lineBuffer[vmli] & 0xff) << 3;
 			}
 			addr |= rc;
 		} else {
@@ -56,7 +53,10 @@ public abstract class VIC {
 			addr &= ~0x600;
 		}
 		int data = sendRequest(new VICRequest(addr, ba));
-		
+		Mode m = Mode.values()[(regs.extEn ? 4 : 0) | (regs.bmEn ? 2 : 0) | (regs.mcEn ? 1 : 0)];
+		for (int offset = 0; offset < 8; offset++) {
+			
+		}
 	}
 	protected abstract int sendRequest(VICRequest req);
 }

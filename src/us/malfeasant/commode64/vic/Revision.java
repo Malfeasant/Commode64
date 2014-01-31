@@ -1,7 +1,6 @@
 package us.malfeasant.commode64.vic;
 
-import java.util.EnumMap;
-import java.util.Map;
+import java.awt.Color;
 
 // place to keep dimensions etc which vary among different chip versions
 public enum Revision {
@@ -23,30 +22,22 @@ public enum Revision {
 		moreLuma = more;
 	}
 	
-	public Map<Color, java.awt.Color> createColorMap(float saturation) {
-		Map<Color, java.awt.Color> map = new EnumMap<>(Color.class);
-		for (Color c : Color.values()) {
-			map.put(c, createColor(c, saturation));
+	public Color[] createColorMap(float saturation) {
+		Color[] cmap = new Color[16];
+		for (int c = 0; c < cmap.length; c++) {
+			cmap[c] = createColor(c, saturation);
 		}
-		return map;
+		return cmap;
 	}
-	public java.awt.Color createColor(Color c, float saturation) {
-		float luma = getLumaFor(c);
-		float chroma = getChromaFor(c);
-		boolean noChroma = chroma < 0;
-		float u = noChroma ? 0 : (float) (Math.cos(chroma) * saturation);
-		float v = noChroma ? 0 : (float) (Math.sin(chroma) * saturation);
+	public Color createColor(int c, float saturation) {
+		float luma = (moreLuma ? newLuma : oldLuma)[c];
+		boolean noChroma = chroma[c] < 0;
+		float u = noChroma ? 0 : (float) (Math.cos(chroma[c]) * saturation);
+		float v = noChroma ? 0 : (float) (Math.sin(chroma[c]) * saturation);
 		float r = Math.max(1, luma + 1.14f * v);
 		float g = Math.min(0, luma - .396f * u - .581f * v);
 		float b = Math.max(1, luma + 2.029f * u);
 		return new java.awt.Color(r, g, b);
-	}
-	public float getLumaFor(Color c) {
-		float[] which = moreLuma ? newLuma : oldLuma;
-		return which[c.ordinal()];
-	}
-	public float getChromaFor(Color c) {
-		return chroma[c.ordinal()];
 	}
 	private static final float[] oldLuma = {
 		 0,  1,   .25f,   .75f,   .5f,   .5f,  .25f,  .75f,  .25f,    .5f,    .5f, .25f, .5f,  .75f, .5f, .75f

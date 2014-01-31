@@ -26,6 +26,7 @@ public abstract class VIC {
 	private final int[] lineBuffer = new int[40];	// holds text characters for multiple lines 
 	private int vmli;	// index into the above
 	private boolean ba;	// halts the cpu when we need to steal cycles
+	private boolean badLine;	// true means vic will steal cycles from cpu
 	
 	public void tick() {
 		
@@ -35,19 +36,25 @@ public abstract class VIC {
 		lineBuffer[vmli] = sendRequest(new VICRequest(addr, ba));
 	}
 	private void gCycle() {	// happens every line, mode affects interpretation
+		int mode = (regs.extEn ? 4 : 0) | (regs.bmEn ? 2 : 0) | (regs.mcEn ? 1 : 0);
 		int text = lineBuffer[vmli] & 0xff;
-		int color = lineBuffer[vmli] >> 8;
-		int addr = regs.charBase;
-		if (regs.bmEn) {
-			addr &= 0x2000;
-			addr |= vc << 3;
+		int cram = lineBuffer[vmli] >> 8;
+		int addr;
+		if (active) {
+			addr = regs.charBase;
+			if (regs.bmEn) {
+				addr &= 0x2000;
+				addr |= vc << 3;
+			} else {
+				addr |= text << 3;
+			}
+			addr |= rc;
 		} else {
-			addr |= text << 3;
+			addr = -1;
 		}
 		if (regs.extEn) {
 			addr &= ~0x600;
 		}
-		addr |= rc;
 		int data = sendRequest(new VICRequest(addr, ba));
 		
 	}

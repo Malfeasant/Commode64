@@ -56,7 +56,7 @@ class RegisterBank {
 	// 1f
 	// sprite-forground collision managed by SpriteControl[]
 	// 20 - 26
-	final Map<Reg, Color> colors;
+	final Map<Reg, Integer> colors;
 	// 27 - 2e
 	// sprite colors managed by SpriteControl[]
 	
@@ -66,13 +66,13 @@ class RegisterBank {
 		}
 		colors = new EnumMap<>(Reg.class);
 		for (int i = 0x20; i < 0x27; i++) {
-			colors.put(Reg.values()[i], Color.BLACK);
+			colors.put(Reg.values()[i], 0);
 		}
 	}
 	int access(int addr, int data, boolean wr) {
 		return (addr < Reg.values().length) ? Reg.values()[addr].access(this, data, wr) : -1;
 	}
-	private enum Reg {
+	enum Reg {
 		SP0X(Type.XPOS), SP0Y(Type.YPOS), SP1X(Type.XPOS), SP1Y(Type.YPOS),
 		SP2X(Type.XPOS), SP2Y(Type.YPOS), SP3X(Type.XPOS), SP3Y(Type.YPOS),
 		SP4X(Type.XPOS), SP4Y(Type.YPOS), SP5X(Type.XPOS), SP5Y(Type.YPOS),
@@ -364,16 +364,16 @@ class RegisterBank {
 		}
 		private int spriteColor(SpriteControl sc, int data, boolean wr) {
 			if (wr)
-				sc.color = Color.values()[data & 0xf];
+				sc.color = data & 0xf;
 			else
-				data = sc.color.ordinal() | 0xf0;	// high bits unconnected, so read high
+				data = sc.color | 0xf0;	// high bits unconnected, so read high
 			return data;
 		}
 		private int color(RegisterBank env, int data, boolean wr) {
 			if (wr)
-				env.colors.put(this, Color.values()[data & 0xf]);
+				env.colors.put(this, data & 0xf);
 			else
-				data = env.colors.get(this).ordinal() | 0xf0;
+				data = env.colors.get(this) | 0xf0;
 			return data;
 		}
 	}

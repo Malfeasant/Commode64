@@ -4,6 +4,19 @@ import java.util.EnumMap;
 import java.util.Map;
 
 class RegisterBank {
+	enum BorderCompare {
+		SHRUNK(31, 335, 55, 247), NORMAL(24, 344, 51, 251);
+		final int left;
+		final int right;
+		final int top;
+		final int bottom;
+		BorderCompare(int l, int r, int t, int b) {
+			left = l;
+			right = r;
+			top = t;
+			bottom = b;
+		}
+	}
 	private static final int SPRITES = 8;
 	
 	// 00 - 10
@@ -11,7 +24,8 @@ class RegisterBank {
 	final SpriteControl[] spriteControl = new SpriteControl[SPRITES];
 	// 11
 	int fineY;
-	boolean row25;
+	BorderCompare vbc = BorderCompare.NORMAL;
+//	boolean row25;
 	boolean dEn;
 	boolean bmEn;
 	boolean extEn;
@@ -26,7 +40,8 @@ class RegisterBank {
 	// sprite enable managed by SpriteControl[]
 	// 16
 	int fineX;
-	boolean col40;
+	BorderCompare hbc = BorderCompare.NORMAL;
+//	boolean col40;
 	boolean mcEn;
 	boolean reset;
 	// 17
@@ -102,7 +117,8 @@ class RegisterBank {
 			protected int access(RegisterBank env, int data, boolean wr) {
 				if (wr) {
 					env.fineY = data & 7;
-					env.row25 = (data & 8) != 0;
+					env.vbc = (data & 8) == 0 ? BorderCompare.SHRUNK : BorderCompare.NORMAL;
+//					env.row25 = (data & 8) != 0;
 					env.dEn = (data & 0x10) != 0;
 					env.bmEn = (data & 0x20) != 0;
 					env.extEn = (data & 0x40) != 0;
@@ -112,7 +128,8 @@ class RegisterBank {
 						env.rasterComp |= 0x100;
 				} else {
 					data = env.fineY;
-					if (env.row25) data |= 8;
+					if (env.vbc == BorderCompare.NORMAL) data |= 8;
+//					if (env.row25) data |= 8;
 					if (env.dEn) data |= 0x10;
 					if (env.bmEn) data |= 0x20;
 					if (env.extEn) data |= 0x40;
@@ -168,12 +185,14 @@ class RegisterBank {
 			protected int access(RegisterBank env, int data, boolean wr) {
 				if (wr) {
 					env.fineX = data & 7;
-					env.col40 = (data & 8) != 0;
+					env.hbc = (data & 8) == 0 ? BorderCompare.SHRUNK : BorderCompare.NORMAL;
+//					env.col40 = (data & 8) != 0;
 					env.mcEn = (data & 0x10) != 0;
 					env.reset = (data & 0x20) != 0;
 				} else {
 					data = env.fineX | 0xc0;	// high 2 bits not connected
-					if (env.col40) data |= 8;
+					if (env.hbc == BorderCompare.NORMAL) data |= 8;
+//					if (env.col40) data |= 8;
 					if (env.mcEn) data |= 0x10;
 					if (env.reset) data |= 0x20;
 				}

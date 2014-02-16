@@ -37,7 +37,7 @@ public enum Revision {
 		float r = Math.max(1, luma + 1.14f * v);
 		float g = Math.min(0, luma - .396f * u - .581f * v);
 		float b = Math.max(1, luma + 2.029f * u);
-		return new java.awt.Color(r, g, b);
+		return new Color(r, g, b);
 	}
 	private static final float[] oldLuma = {
 		 0,  1,   .25f,   .75f,   .5f,   .5f,  .25f,  .75f,  .25f,    .5f,    .5f, .25f, .5f,  .75f, .5f, .75f

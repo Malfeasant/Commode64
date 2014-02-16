@@ -17,8 +17,15 @@ public abstract class VIC {
 		return regs.access(addr, request.data, request.write);
 	}
 	
+	// bus drivers
+	private int address;
+	private int data;
+	
 	private int cycle;
+	private int x;
 	private int line;
+	private boolean vBorder;	// vertical border flip flop
+	private boolean border;	// main border flip flop
 	private boolean active;	// true when within display window, false outside
 	private int vc;	// video counter
 	private int vcbase;
@@ -26,16 +33,19 @@ public abstract class VIC {
 	private final int[] lineBuffer = new int[40];	// holds text characters for multiple lines 
 	private int vmli;	// index into the above
 	private boolean ba;	// halts the cpu when we need to steal cycles
+	private boolean ba3;	// true if ba has been true for 3 cycles
 	private boolean badLine;	// true means vic will steal cycles from cpu
 	
 	public void tick() {
-		
+		for (int i = 0; i < 8; ++i) {
+			
+		}
 	}
 	private void cCycle() {	// always the same no matter what mode, but only happens every 8 lines
 		int addr = regs.vmBase | vc;
 		lineBuffer[vmli] = sendRequest(new VICRequest(addr, ba));
 	}
-	private void gCycle() {	// happens every line, mode affects interpretation
+	private void gCycle() {	// happens every cycle, mode affects interpretation
 		int addr;
 		if (active) {
 			addr = regs.charBase;

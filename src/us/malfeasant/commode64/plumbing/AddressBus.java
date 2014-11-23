@@ -1,13 +1,54 @@
 package us.malfeasant.commode64.plumbing;
 
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.Map;
+
 public class AddressBus {
-	private final CpuProxy cP = new CpuProxy();
-	private final VicProxy vP = new VicProxy();
-	private final BankProxy bP = new BankProxy();
-	private final PortProxy pP = new PortProxy();
+	public enum Tag {
+		CPU, PORT,
+		VIC {
+			@Override
+			Proxy makeNew(AddressBus bus) {
+				return bus.new Proxy() {
+					@Override
+					public void write(int v) {
+						super.write(v | 0xc000);
+					}
+					@Override
+					public int read() {
+						return super.read() & 0x3f;
+					}
+				};
+			}
+		},
+		BANK {
+			@Override
+			Proxy makeNew(AddressBus bus) {
+				return bus.new Proxy() {
+					@Override
+					public void write(int v) {
+						super.write((v << 14) | 0x3fff);
+					}
+					@Override
+					public int read() {	// this likely will never get used, but just to be complete...
+						return super.read() >> 14;
+					}
+				};
+			}
+		};
+		Proxy makeNew(AddressBus bus) {
+			return bus.new Proxy();
+		}
+	}
+	private final Map<Tag, Proxy> writers;
 	
 	public AddressBus() {
-		
+		Map<Tag, Proxy> w = new EnumMap<>(Tag.class);
+		for (Tag t : Tag.values()) {
+			w.put(t, t.makeNew(this));
+		}
+		writers = Collections.unmodifiableMap(w);
 	}
 	
 	public class Proxy {
@@ -15,24 +56,6 @@ public class AddressBus {
 		public void write(int v) {
 			value = v & 0xffff;
 		}
-	}
-	public class VicProxy extends Proxy {
-		@Override
-		public void write(int v) {
-			super.write(v & 0x3fff);
-		}
-		public int read() {
-			return get() & 0x3f;
-		}
-	}
-	public class BankProxy extends Proxy {
-		@Override
-		public void write(int v) {
-			super.write(v << 14);
-		}
-	}
-	public class CpuProxy extends Proxy {}
-	public class PortProxy extends Proxy {
 		public int read() {
 			return get();
 		}
@@ -40,9 +63,9 @@ public class AddressBus {
 	
 	private int get() {
 		int value = 0xffff;
-		value &= cP.value;
-		value &= (vP.value | bP.value);
-		value &= pP.value;
+		for (Proxy p : writers.values()) {
+			value &= p.value;
+		}
 		return value;
 	}
 }

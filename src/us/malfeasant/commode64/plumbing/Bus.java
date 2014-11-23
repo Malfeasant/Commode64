@@ -4,10 +4,13 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 
-public class AddressBus {
+public class Bus {
 	private final Map<Tag, Proxy> writers;
+	private final int mask;
 	
-	public AddressBus() {
+	public Bus(int width) {
+		if (width < 1 || width > 30) throw new IllegalArgumentException("Bus width must be positive, max 30");
+		mask = (1 << width) - 1;
 		Map<Tag, Proxy> w = new EnumMap<>(Tag.class);
 		for (Tag t : Tag.values()) {
 			w.put(t, t.makeNew(this));
@@ -29,7 +32,7 @@ public class AddressBus {
 	}
 	
 	private int get() {
-		int value = 0xffff;
+		int value = mask;
 		for (Proxy p : writers.values()) {
 			value &= p.value;
 		}

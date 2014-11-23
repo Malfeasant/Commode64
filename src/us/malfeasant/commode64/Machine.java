@@ -2,12 +2,12 @@ package us.malfeasant.commode64;
 
 import us.malfeasant.commode64.config.Config;
 
-public class System {
+public class Machine {
 	private final Config conf;
-	public System() {
+	public Machine() {
 		this(Config.getDefault());
 	}
-	public System(Config c) {
+	public Machine(Config c) {
 		if (c == null) throw new NullPointerException("Use no-arg constructor!");
 		conf = c;
 	}

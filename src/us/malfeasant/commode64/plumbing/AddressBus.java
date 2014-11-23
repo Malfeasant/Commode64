@@ -5,42 +5,6 @@ import java.util.EnumMap;
 import java.util.Map;
 
 public class AddressBus {
-	public enum Tag {
-		CPU, PORT,
-		VIC {
-			@Override
-			Proxy makeNew(AddressBus bus) {
-				return bus.new Proxy() {
-					@Override
-					public void write(int v) {
-						super.write(v | 0xc000);
-					}
-					@Override
-					public int read() {
-						return super.read() & 0x3f;
-					}
-				};
-			}
-		},
-		BANK {
-			@Override
-			Proxy makeNew(AddressBus bus) {
-				return bus.new Proxy() {
-					@Override
-					public void write(int v) {
-						super.write((v << 14) | 0x3fff);
-					}
-					@Override
-					public int read() {	// this likely will never get used, but just to be complete...
-						return super.read() >> 14;
-					}
-				};
-			}
-		};
-		Proxy makeNew(AddressBus bus) {
-			return bus.new Proxy();
-		}
-	}
 	private final Map<Tag, Proxy> writers;
 	
 	public AddressBus() {
@@ -50,9 +14,12 @@ public class AddressBus {
 		}
 		writers = Collections.unmodifiableMap(w);
 	}
+	public Proxy getProxy(Tag which) {
+		return writers.get(which);
+	}
 	
 	public class Proxy {
-		int value;
+		int value = -1;
 		public void write(int v) {
 			value = v & 0xffff;
 		}

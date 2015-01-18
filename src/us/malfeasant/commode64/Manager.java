@@ -1,17 +1,22 @@
 package us.malfeasant.commode64;
 
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
-class Manager {
+import us.malfeasant.commode64.config.Config;
+
+public class Manager {
 	private static final Path home = Paths.get(System.getProperty("user.home"));
 	
 	public static void main(String[] args) {
@@ -20,12 +25,36 @@ class Manager {
 		SwingUtilities.invokeLater(() -> new Manager());
 	}
 	
-	private final JMenuItem settingsItem;
-	private final JMenuItem cloneItem;
-	private final JMenuItem deleteItem;
+	private final Action create = new AbstractAction("New") {
+		private static final long serialVersionUID = 1L;
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			create();
+		}
+	};
+	private final Action settings = new AbstractAction("Settings") {
+		private static final long serialVersionUID = 1L;
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			settings();
+		}
+	};
+	private final Action clone = new AbstractAction("Clone") {
+		private static final long serialVersionUID = 1L;
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			copy();
+		}
+	};
+	private final Action delete = new AbstractAction("Delete") {
+		private static final long serialVersionUID = 1L;
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			delete();
+		}
+	};
 	
 	private Manager() {
-		
 		Path path = home.resolve("Commode64");
 		if (Files.notExists(path)) {
 			try {
@@ -49,31 +78,33 @@ class Manager {
 		
 		menu = new JMenu("Machine");
 		bar.add(menu);
-		item = new JMenuItem("New...");
+		item = new JMenuItem();
 		menu.add(item);
-		item.addActionListener(event -> create());
+		item.setAction(create);
 		
-		settingsItem = new JMenuItem("Settings...");
-		menu.add(settingsItem);
-		settingsItem.setEnabled(false);
-		settingsItem.addActionListener(event -> settings());
+		item = new JMenuItem();
+		menu.add(item);
+		settings.setEnabled(false);
+		item.setAction(settings);
 		
-		cloneItem = new JMenuItem("Clone...");
-		menu.add(cloneItem);
-		cloneItem.setEnabled(false);
-		cloneItem.addActionListener(event -> copy());
+		item = new JMenuItem();
+		menu.add(item);
+		clone.setEnabled(false);
+		item.setAction(clone);
 		
-		deleteItem = new JMenuItem("Delete...");
-		menu.add(deleteItem);
-		deleteItem.setEnabled(false);
-		deleteItem.addActionListener(event -> delete());
+		item = new JMenuItem();
+		menu.add(item);
+		delete.setEnabled(false);
+		item.setAction(delete);
 		
 		frame.setVisible(true);
 		frame.pack();
 	}
 	
 	private void create() {
-		
+		Config.Builder cb = new Config.Builder();
+		cb.showDialog(null);	// TODO: pass a component once we have some to choose from...
+		System.out.println(cb.pack());
 	}
 	private void settings() {
 		

@@ -12,12 +12,13 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import us.malfeasant.commode64.config.Config;
 
 public class Manager {
-	private static final Path home = Paths.get(System.getProperty("user.home"));
+	private static final Path home = Paths.get(System.getProperty("user.home"), "Commode64");
 	
 	public static void main(String[] args) {
 		// TODO parse args... option to start a machine without manager?
@@ -55,13 +56,12 @@ public class Manager {
 	};
 	
 	private Manager() {
-		Path path = home.resolve("Commode64");
-		if (Files.notExists(path)) {
+		if (Files.notExists(home)) {
 			try {
-				Files.createDirectory(path);
+				Files.createDirectory(home);
 			} catch (IOException e) {
-				System.err.println("Fatal error: Storage directory doesn't exist, and couldn't be created.");
-				System.exit(-1);
+				System.err.println("Fatal error: Storage directory missing, and could not be created.");	// TODO: try harder
+				System.exit(-1);	// TODO: more graceful failure
 			}
 		}
 		
@@ -102,6 +102,23 @@ public class Manager {
 	}
 	
 	private void create() {
+		Path confFile = null;
+		while (confFile == null) {
+			String name = JOptionPane.showInputDialog(null, "Choose a name for your machine:", "");
+			confFile = home.resolve(name + ".c64");
+			if (validate(name) && !Files.exists(confFile)) {
+				try {
+					Files.createFile(confFile);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					confFile = null;
+				}
+			} else {
+				confFile = null;
+				JOptionPane.showMessageDialog(null, "No good!", "Error", JOptionPane.ERROR_MESSAGE);	// TODO: obvious?
+			}
+		}
 		Config.Builder cb = new Config.Builder();
 		cb.showDialog(null);	// TODO: pass a component once we have some to choose from...
 		System.out.println(cb.pack());
@@ -114,5 +131,12 @@ public class Manager {
 	}
 	private void delete() {
 		
+	}
+	private boolean validate(String filename) {
+		if (filename.contains("/")) return false;
+		if (filename.contains("\\")) return false;	// TODO: better way?
+		if (filename.contains("?")) return false;
+		if (filename.contains(":")) return false;
+		return true;
 	}
 }

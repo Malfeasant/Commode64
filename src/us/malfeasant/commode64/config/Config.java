@@ -5,7 +5,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -19,20 +18,12 @@ public class Config {
 	
 	public static class Builder extends JPanel {
 		private static final long serialVersionUID = 1L;
-		private static final Config DEFAULT = new Config(Power.US, Oscillator.NTSC);
+		private static final Config DEFAULT_CONF = new Config(Power.US, Oscillator.NTSC);
 		private final JComboBox<Power> powCombo = new JComboBox<Power>(Power.values());
 		private final JComboBox<Oscillator> oscCombo = new JComboBox<Oscillator>(Oscillator.values());
-		private Config conf;
+		private Config conf = DEFAULT_CONF;
 		
 		public Builder() {
-			this(DEFAULT);	// TODO persistent selectable defaults?
-		}
-		/**
-		 * Essentially a copy constructor, since Config is immutable.
-		 * @param c - an existing Config as a starting point to allow modification.
-		 */
-		public Builder(Config c) {
-			conf = c;
 			setLayout(new GridBagLayout());
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.fill = GridBagConstraints.BOTH;
@@ -45,16 +36,19 @@ public class Config {
 			add(new JLabel(Power.class.getSimpleName()), gbc);
 			gbc.gridx++;
 			add(powCombo, gbc);
-			powCombo.setSelectedItem(c.power);
-			oscCombo.setSelectedItem(c.oscillator);
+			powCombo.setSelectedItem(conf.power);
+			oscCombo.setSelectedItem(conf.oscillator);
 		}
 		public Config getConfig() {
 			return conf;
 		}
-		public void showDialog(JComponent parent) {
-			if (JOptionPane.showConfirmDialog(parent, this, "Options", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
-				conf = new Config((Power) powCombo.getSelectedItem(), (Oscillator) oscCombo.getSelectedItem());
-			}
+		/**
+		 * @param parent: component to display near
+		 * @return true if OK was clicked, false otherwise.
+		 */
+		public void showDialog() {
+			JOptionPane.showConfirmDialog(null, this, "Options", JOptionPane.DEFAULT_OPTION);
+			conf = new Config((Power) powCombo.getSelectedItem(), (Oscillator) oscCombo.getSelectedItem());
 		}
 		public String pack() {
 			Gson gson = new Gson();

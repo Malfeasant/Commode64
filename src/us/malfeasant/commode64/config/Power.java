@@ -1,15 +1,13 @@
 package us.malfeasant.commode64.config;
 
 public enum Power {
-	// These are somewhat magic numbers, and are dependent on Invariants.INTERVAL_MS
-	US(3, 10), EU(1, 4);
+	// Number of cycles per second
+	US(60), EU(50);
 	
-	private final int numer;
-	private final int denom;
+	private final int cycles;
 	
-	Power(int n, int d) {
-		numer = n;
-		denom = d;
+	Power(int n) {
+		cycles = n;
 	}
 	
 	// TODO add methods to schedule and receive ticks

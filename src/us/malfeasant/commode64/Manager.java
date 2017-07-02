@@ -18,4 +18,9 @@ public class Manager {
 		builder.showDialog();
 		conf = builder.getConfig();
 	}
+	
+	private Manager(Config conf) {
+		if (conf == null) throw new NullPointerException(getClass() + " constructor called with null Config!");
+		this.conf = conf;
+	}
 }

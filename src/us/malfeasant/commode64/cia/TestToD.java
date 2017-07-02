@@ -11,7 +11,7 @@ import javax.swing.SwingUtilities;
 /**
  * This only tests proper functionality- testing improper functionality (i.e. writing nonsense values) can wait.
  * @author Mischa
- *
+ * TODO - rewrite tests to work with reworked class
  */
 public class TestToD {
 	public static void main(String[] args) {
@@ -49,10 +49,10 @@ public class TestToD {
 		gbc.gridx = 1;
 		gbc.gridy = 0;
 		gbc.gridheight = 2;
-		ViewToD view = new ViewToD();
-		panel.add(view, gbc);
-		tod.addListener(view);
-		tod.set(0, 0, false);
+//		ViewToD view = new ViewToD();
+//		panel.add(view, gbc);
+//		tod.addListener(view);
+//		tod.set(0, 0, false);
 		/*
 		tod.set(3, 0x12, true);
 		for (int i = 0; i < 0x100; i++) {

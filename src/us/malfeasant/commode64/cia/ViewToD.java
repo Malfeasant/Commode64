@@ -1,5 +1,5 @@
 package us.malfeasant.commode64.cia;
-
+/* Going to rethink this one... will update too frequently to use a listener model
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
@@ -47,3 +47,4 @@ public class ViewToD extends JPanel implements ChangeListener {
 		fields[which].setText(String.format(FMT, h & 0x1f, m, s, t, (h & 0x80) == 0 ? "a" : "p" ));
 	}
 }
+*/

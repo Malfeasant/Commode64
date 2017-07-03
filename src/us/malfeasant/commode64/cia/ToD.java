@@ -3,11 +3,11 @@ package us.malfeasant.commode64.cia;
 class ToD {
 	private final PackedTimeField time = new PackedTimeField();
 	private PackedTimeField latch = time;
-	private final PackedTimeField alarm = new PackedTimeField();
+	private final PackedTimeField alarm = new PackedTimeField(0);
 	private boolean setAlarm = false;
 	
 	/**
-	 * Override this method
+	 * Override this method to receive an interrupt
 	 */
 	void setIRQ() {	}
 
@@ -21,8 +21,27 @@ class ToD {
 		return f.unpack(this);
 	}
 	void tick() {
-		time.tick();
-	}
+		if (time.run) {
+			switch (time.time & 0xf) {
+			case 0x9:
+				switch (time.time & 0xf00) {
+				case 0x900:
+					switch (time.time & 0x7000) {
+					case 0x5000:
+						switch (time.time & 0xf0000) {
+						case 0x90000:
+							switch (time.time & 0x700000) {
+							case 0x500000:
+								switch (time.time & 0x1f000000) {
+								
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}	// now I remember why I wanted to break this out into separate fields like HH/HL/MH/ML/SH/SL/T...
 	
 	/**
 	 * So as not to duplicate a bunch of code, Time, Latch, and Alarm are each one of these, then an accessor will
@@ -36,11 +55,6 @@ class ToD {
 		}
 		PackedTimeField(int t) {
 			time = t;
-		}
-		void tick() {
-			if (run) {
-				// TODO
-			}
 		}
 	}
 	
@@ -92,8 +106,8 @@ class ToD {
 			return (t.latch.time >> (ordinal() * 8)) & mask;
 		}
 		void pack(ToD t, int incoming) {
-			(t.setAlarm ? t.alarm : t.time).time &= ~(0xff << ordinal() * 8);	// mask out the byte we are about to change
 			incoming &= mask;	// only keep bits valid for this field
+			(t.setAlarm ? t.alarm : t.time).time &= ~(0xff << ordinal() * 8);	// mask out the byte we are about to change
 			(t.setAlarm ? t.alarm : t.time).time |= incoming << ordinal() * 8;
 		}
 	}

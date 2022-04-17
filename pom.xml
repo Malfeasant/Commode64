@@ -36,6 +36,7 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>us.malfeasant.commode/us.malfeasant.commode64.App</mainClass>
+                    <!--commandlineArgs>foo -&#45;bar bar=foo -&#45;foo=bar</commandlineArgs-->
                 </configuration>
                 <executions>
                     <execution>

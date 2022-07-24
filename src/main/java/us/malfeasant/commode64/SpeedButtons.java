@@ -1,46 +1,67 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package us.malfeasant.commode64;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 
 /**
  *
- * @author mischa
+ * @author Malfeasant
  */
 class SpeedButtons {
     private final HBox speedButtonBox;
-    private final ToggleGroup speedButtonGroup;
+    private final ToggleGroup speedButtonGroup = new ToggleGroup();
+    private final ReadOnlyObjectProperty<SpeedSet> speedProperty;
+    
     SpeedButtons() {
-        speedButtonGroup = new ToggleGroup();
-        var stepButton = new ToggleButton(">|");
-        stepButton.setTooltip(new Tooltip("Pause/Single Step"));
-        stepButton.setToggleGroup(speedButtonGroup);
-        var playButton = new ToggleButton(">");
-        playButton.setTooltip(new Tooltip("Run realtime"));
-        playButton.setToggleGroup(speedButtonGroup);
-        var fastButton = new ToggleButton(">>");
-        fastButton.setTooltip(new Tooltip("Run unrestricted"));
-        fastButton.setToggleGroup(speedButtonGroup);
+        var stepButton = makeButton(SpeedSet.STEP);
+        stepButton.setOnAction(e -> {	// immediately unselect this once clicked
+        	stepButton.setSelected(false);
+        });
+        var playButton = makeButton(SpeedSet.REAL);
+        var fastButton = makeButton(SpeedSet.FAST);
         speedButtonBox = new HBox(stepButton, playButton, fastButton);
+        
+        var prop = new ReadOnlyObjectWrapper<SpeedSet>();
+        prop.bind(Bindings.createObjectBinding(() -> {
+        	var selected = speedButtonGroup.selectedToggleProperty().getValue();
+        	return selected == null ? null : (SpeedSet) (selected.getUserData());
+    	}, speedButtonGroup.selectedToggleProperty()));
+        speedProperty = prop.getReadOnlyProperty();
     }
     
+    private RadioButton makeButton(SpeedSet s) {
+    	var button = new RadioButton(s.label);
+        button.getStyleClass().remove("radio-button");	// pain in arse.  I want the behavior of a radio button
+        button.getStyleClass().add("toggle-button");	// but the look of a toggle button.
+        button.setTooltip(new Tooltip(s.tooltip));
+        button.setToggleGroup(speedButtonGroup);
+        button.setUserData(s);
+        return button;
+    }
+    
+    enum SpeedSet {
+    	STEP(">|", "Pause/Single Step"), REAL(">", "Run realtime"), FAST(">>", "Run unrestricted");
+    	final String label;
+    	final String tooltip;
+    	SpeedSet(String label, String tooltip) {
+    		this.label = label;
+    		this.tooltip = tooltip;
+    	}
+    }
     HBox getButtonBox() {
         return speedButtonBox;
     }
     
     /**
      * Listen to this property to be alerted when button selection changes.
-     * @return ToggleGroup's selectedToggleProperty
+     * @return read only property which holds a speed enum- can be null, in fact will be null if machine is paused.
      */
-    ReadOnlyObjectProperty<Toggle> selectedToggleProperty() {
-        return speedButtonGroup.selectedToggleProperty();
+    ReadOnlyObjectProperty<SpeedSet> selectedSpeedProperty() {
+    	return speedProperty;
     }
 }

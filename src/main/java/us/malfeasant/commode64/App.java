@@ -20,8 +20,10 @@ public class App extends Application {
         
         var pane = new BorderPane();
         var speedButtons = new SpeedButtons();
+        speedButtons.selectedSpeedProperty().addListener(e -> {
+        	System.out.println(e);
+        });
         pane.setBottom(speedButtons.getButtonBox());
-        
         stage.setScene(new Scene(pane));
         stage.show();
     }

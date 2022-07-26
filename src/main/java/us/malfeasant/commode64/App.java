@@ -16,13 +16,12 @@ public class App extends Application {
         //final Parameters params = getParameters();
         // TODO: more thorough arg parsing
         
+    	var imp = new Impetus();
+    	
         // Setup the buttons which control simulation speed, stepping
         
         var pane = new BorderPane();
         var speedButtons = new SpeedButtons();
-        speedButtons.selectedSpeedProperty().addListener(e -> {
-        	System.out.println(e);
-        });
         pane.setBottom(speedButtons.getButtonBox());
         stage.setScene(new Scene(pane));
         stage.show();

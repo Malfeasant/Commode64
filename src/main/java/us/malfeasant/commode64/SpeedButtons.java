@@ -12,7 +12,7 @@ import javafx.scene.layout.HBox;
  *
  * @author Malfeasant
  */
-class SpeedButtons {
+public class SpeedButtons {
     private final HBox speedButtonBox;
     private final ToggleGroup speedButtonGroup = new ToggleGroup();
     private final ReadOnlyObjectProperty<SpeedSet> speedProperty;
@@ -44,7 +44,7 @@ class SpeedButtons {
         return button;
     }
     
-    enum SpeedSet {
+    public enum SpeedSet {
     	STEP(">|", "Pause/Single Step"), REAL(">", "Run realtime"), FAST(">>", "Run unrestricted");
     	final String label;
     	final String tooltip;

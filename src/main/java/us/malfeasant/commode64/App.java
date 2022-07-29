@@ -18,10 +18,16 @@ public class App extends Application {
         
     	var imp = new Impetus();
     	
+    	stage.setOnCloseRequest(e -> {
+    		// TODO determine if anything should be saved- disk image or similar?
+    		imp.shutdown();
+    	});
+    	
         // Setup the buttons which control simulation speed, stepping
         
         var pane = new BorderPane();
         var speedButtons = new SpeedButtons();
+        imp.bindSpeedProp(speedButtons.selectedSpeedProperty());
         pane.setBottom(speedButtons.getButtonBox());
         stage.setScene(new Scene(pane));
         stage.show();

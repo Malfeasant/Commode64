@@ -1,38 +1,57 @@
 package us.malfeasant.commode64;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.prefs.Preferences;
 
-import javafx.beans.binding.ObjectExpression;
 import javafx.beans.property.SimpleObjectProperty;
-import us.malfeasant.commode64.timing.Fraction;
-import us.malfeasant.commode64.timing.IntervalListener;
+import us.malfeasant.commode64.timing.Crystal;
+import us.malfeasant.commode64.timing.CycleListener;
+import us.malfeasant.commode64.timing.Power;
 
 /**
- * What makes everything go
+ * What makes everything go.  Manages a background thread that runs the emulation.  Both power and crystal
+ * run on the same thread, but on different schedules.  Neither have to be perfect as long as long term average
+ * is correct, but jitter in Crystal would probably be more noticeable, so we will go to great lengths to avoid it.
  * @author Malfeasant
  */
 public class Impetus {
-	private static final long PERIOD = 5;
+	private static final long PERIOD = 5;	// more frequent than screen refreshes
 	private static final TimeUnit TIME_UNIT = TimeUnit.MILLISECONDS;
 	
-	private final SimpleObjectProperty<SpeedButtons.SpeedSet> speedProp = new SimpleObjectProperty<>();	// TODO expose prop
-	
 	private final ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
-	private final ScheduledFuture<?> task;	// TODO what type for generic?
 	
-	private final Map<IntervalListener, DividerState> listeners = new IdentityHashMap<>();
+	private final Preferences prefs = Preferences.userNodeForPackage(getClass());
+	
+	private final SimpleObjectProperty<Crystal> crystalProp;
+	private final SimpleObjectProperty<Power> powerProp;
+	
+	private final List<CycleListener> crystalListeners = new ArrayList<>();
+	private final List<CycleListener> powerListeners = new ArrayList<>();
 	
 	public Impetus() {
-		task = exec.scheduleAtFixedRate(() -> tick(), 0, PERIOD, TIME_UNIT);
+		var crystal = Crystal.valueOf(prefs.get(Crystal.class.getSimpleName(), Crystal.NTSC.name()));
+		var power = Power.valueOf(prefs.get(Power.class.getSimpleName(), Power.US.name()));
+		
+		crystalProp = new SimpleObjectProperty<>(crystal);
+		powerProp = new SimpleObjectProperty<>(power);
+		
+		exec.scheduleAtFixedRate(() -> crystalTick(), 0, PERIOD, TIME_UNIT);
+		exec.scheduleAtFixedRate(() -> powerTick(), 0, 100, TIME_UNIT);
+		
+		
 	}
 	
-	public void bindSpeedProp(ObjectExpression<SpeedButtons.SpeedSet> speed) {
-		speedProp.bind(speed);
+	private void powerTick() {
+		for (var l : powerListeners) {
+			l.fire(powerProp.get().cycles);
+		}
+	}
+	private void crystalTick() {
+		
 	}
 	
 	private int tick;
@@ -50,27 +69,9 @@ public class Impetus {
 		tickrate += rate;
 		tickrate /= 4;
 		System.out.print("Received " + tick + " ticks in " + secs + "s: " + rate + " ticks per second.\t");
-		System.out.println("Long term average: " + tickrate + " ticks per second.");
+		System.out.println("Long term average: " + tickrate + " ticks per second.  Thread " + Thread.currentThread());
 		tick = 0;
 		lastTime = now;
-	}
-	
-	private class DividerState {
-		private final Fraction frequency;
-		private DividerState(Fraction f) {
-			frequency = f;
-		}
-	}
-	/**
-	 * Adds a listener for periodic events- the listener will be called with a number of events each interval
-	 * @param listener the listener to be notified each interval
-	 * @param frequency a (fractional) number of events per second
-	 */
-	public void addListener(IntervalListener listener, Fraction frequency) {
-		listeners.put(listener, new DividerState(frequency));
-	}
-	public void removeListener(IntervalListener listener) {
-		listeners.remove(listener);
 	}
 	
 	public void shutdown() {

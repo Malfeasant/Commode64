@@ -26,9 +26,6 @@ public class App extends Application {
         // Setup the buttons which control simulation speed, stepping
         
         var pane = new BorderPane();
-        var speedButtons = new SpeedButtons();
-        imp.bindSpeedProp(speedButtons.selectedSpeedProperty());
-        pane.setBottom(speedButtons.getButtonBox());
         stage.setScene(new Scene(pane));
         stage.show();
     }

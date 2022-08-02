@@ -1,17 +1,15 @@
 package us.malfeasant.commode64.timing;
 
-public enum Power implements Fraction {
-	US(60), EU(50);
-	private final int cycles;
+/**
+ * For an event every 1/10th second, how many cycles of ac power have there been.
+ * 
+ * @author Malfeasant
+ */
+public enum Power {
+	US(6), EU(5);
+	public final int cycles;
+	public final int milliseconds = 100;
 	Power(int c) {
 		cycles = c;
-	}
-	@Override
-	public int numerator() {
-		return cycles;
-	}
-	@Override
-	public int denominator() {
-		return 1;
 	}
 }

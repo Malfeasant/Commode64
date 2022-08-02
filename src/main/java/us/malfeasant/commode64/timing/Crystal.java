@@ -1,19 +1,16 @@
 package us.malfeasant.commode64.timing;
 
-public enum Crystal implements Fraction {
-	NTSC(45000000, 44), PAL(17734475, 18);
-	private final int cycles;
-	private final int seconds;
+/**
+ * Magic numbers- represents a number of cyles per a number of seconds, which end up being an exact
+ * representation of otherwise ugly repeating decimals
+ * @author Malfeasant
+ */
+public enum Crystal {
+	NTSC(11250000, 11), PAL(17734475, 18);
+	public final int cycles;
+	public final int seconds;
 	Crystal(int c, int s) {
 		cycles = c;
 		seconds = s;
-	}
-	@Override
-	public int numerator() {
-		return cycles;
-	}
-	@Override
-	public int denominator() {
-		return seconds;
 	}
 }

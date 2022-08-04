@@ -1,14 +1,14 @@
 package us.malfeasant.commode64.timing;
 
 /**
- * For an event every 1/10th second, how many cycles of ac power have there been.
+ * Represents ac power, how many cycles per second, as North American (60Hz) or European (50Hz)
  * 
  * @author Malfeasant
  */
 public enum Power {
-	US(6), EU(5);
+	NA(60), EU(50);
 	public final int cycles;
-	public final int milliseconds = 100;
+	public final int seconds = 1;
 	Power(int c) {
 		cycles = c;
 	}

@@ -9,7 +9,6 @@ import java.util.prefs.Preferences;
 
 import javafx.beans.property.SimpleObjectProperty;
 import us.malfeasant.commode64.timing.Crystal;
-import us.malfeasant.commode64.timing.CycleListener;
 import us.malfeasant.commode64.timing.Power;
 
 /**
@@ -19,7 +18,7 @@ import us.malfeasant.commode64.timing.Power;
  * @author Malfeasant
  */
 public class Impetus {
-	private static final long PERIOD = 5;	// more frequent than screen refreshes
+	private static final long PERIOD = 8;	// more frequent than screen refreshes
 	private static final TimeUnit TIME_UNIT = TimeUnit.MILLISECONDS;
 	
 	private final ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
@@ -29,49 +28,73 @@ public class Impetus {
 	private final SimpleObjectProperty<Crystal> crystalProp;
 	private final SimpleObjectProperty<Power> powerProp;
 	
-	private final List<CycleListener> crystalListeners = new ArrayList<>();
-	private final List<CycleListener> powerListeners = new ArrayList<>();
+	private final List<Runnable> crystalListeners = new ArrayList<>();
+	private final List<Runnable> powerListeners = new ArrayList<>();
 	
 	public Impetus() {
 		var crystal = Crystal.valueOf(prefs.get(Crystal.class.getSimpleName(), Crystal.NTSC.name()));
-		var power = Power.valueOf(prefs.get(Power.class.getSimpleName(), Power.US.name()));
+		var power = Power.valueOf(prefs.get(Power.class.getSimpleName(), Power.NA.name()));
 		
 		crystalProp = new SimpleObjectProperty<>(crystal);
 		powerProp = new SimpleObjectProperty<>(power);
 		
-		exec.scheduleAtFixedRate(() -> crystalTick(), 0, PERIOD, TIME_UNIT);
-		exec.scheduleAtFixedRate(() -> powerTick(), 0, 100, TIME_UNIT);
-		
-		
+		exec.scheduleAtFixedRate(() -> tick(), 0, PERIOD, TIME_UNIT);
+		exec.scheduleAtFixedRate(() -> showRate(), 0, 1000, TIME_UNIT);
 	}
 	
 	private void powerTick() {
+		totalPower++;
 		for (var l : powerListeners) {
-			l.fire(powerProp.get().cycles);
+			l.run();
 		}
 	}
 	private void crystalTick() {
-		
+		totalCrystal++;
+		for (var l : crystalListeners) {
+			l.run();
+		}
 	}
 	
-	private int tick;
+	private void showRate() {	// this is all debug, confirming the speed is right- no need to keep it
+		var now = System.nanoTime();
+		var elapsed = (now - lastTime) * 1e-9;
+		System.out.println("Elapsed time: " + elapsed + " seconds.");
+		lastTime = now;
+		var crate = totalCrystal / elapsed;
+		var prate = totalPower / elapsed;
+		crystalRate *= 99;
+		crystalRate += crate;
+		crystalRate /= 100;
+		powerRate *= 99;
+		powerRate += prate;
+		powerRate /= 100;
+		System.out.println("Crystal fired " + totalCrystal + " ticks for a rate of " + crystalRate + " ticks per second.");
+		System.out.println("Power fired " + totalPower + " ticks for a rate of " + powerRate + " ticks per second.");
+		totalCrystal = 0;
+		totalPower = 0;
+	}
+	private int powerTicks;
+	private int crystalTicks;
+	
+	private long totalPower;
+	private long totalCrystal;
 	private long lastTime = System.nanoTime();
-	private double tickrate;
+	private double powerRate;
+	private double crystalRate;
 	
 	private void tick() {
-		tick++;
-		if (tick < 200) return;
-		var now = System.nanoTime();
-		var nanos = now - lastTime;
-		var secs = nanos / 1e9;
-		var rate = tick / secs;
-		tickrate *= 3;
-		tickrate += rate;
-		tickrate /= 4;
-		System.out.print("Received " + tick + " ticks in " + secs + "s: " + rate + " ticks per second.\t");
-		System.out.println("Long term average: " + tickrate + " ticks per second.  Thread " + Thread.currentThread());
-		tick = 0;
-		lastTime = now;
+		powerTicks += powerProp.get().cycles * PERIOD;
+		while (powerTicks >= powerProp.get().seconds * 1000) {
+			powerTicks -= powerProp.get().seconds * 1000;
+			powerTick();
+			//totalPower++;
+		}
+		crystalTicks += crystalProp.get().cycles * PERIOD;
+		while (crystalTicks >= crystalProp.get().seconds * 1000) {
+			crystalTicks -= crystalProp.get().seconds * 1000;
+			crystalTick();
+			//totalCrystal++;
+		}
 	}
 	
 	public void shutdown() {

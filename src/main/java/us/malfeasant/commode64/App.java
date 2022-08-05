@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import us.malfeasant.commode64.timing.Impetus;
 
 
 /**
@@ -23,8 +24,6 @@ public class App extends Application {
     		imp.shutdown();
     	});
     	
-        // Setup the buttons which control simulation speed, stepping
-        
         var pane = new BorderPane();
         stage.setScene(new Scene(pane));
         stage.show();

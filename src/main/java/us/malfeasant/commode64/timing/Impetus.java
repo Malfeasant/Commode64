@@ -36,10 +36,8 @@ public class Impetus {
 	private final List<Runnable> powerListeners = new CopyOnWriteArrayList<>();	// fx thread and bg thread
 	
 	public Impetus() {
-		var crystal = Crystal.valueOf(prefs.get(Crystal.class.getSimpleName(), Crystal.PAL.name()));
-		var power = Power.valueOf(prefs.get(Power.class.getSimpleName(), Power.EU.name()));
-		//var crystal = Crystal.valueOf(prefs.get(Crystal.class.getSimpleName(), Crystal.NTSC.name()));
-		//var power = Power.valueOf(prefs.get(Power.class.getSimpleName(), Power.NA.name()));
+		var crystal = Crystal.valueOf(prefs.get(Crystal.class.getSimpleName(), Crystal.NTSC.name()));
+		var power = Power.valueOf(prefs.get(Power.class.getSimpleName(), Power.NA.name()));
 		
 		crystalProp = new SimpleObjectProperty<>(crystal);
 		powerProp = new SimpleObjectProperty<>(power);

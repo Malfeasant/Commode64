@@ -32,8 +32,8 @@ public class Impetus {
 	private final SimpleObjectProperty<Crystal> crystalProp;
 	private final SimpleObjectProperty<Power> powerProp;
 	
-	private final List<Runnable> crystalListeners = new CopyOnWriteArrayList<>();	// these will be used by both
-	private final List<Runnable> powerListeners = new CopyOnWriteArrayList<>();	// fx thread and bg thread
+	private final List<CrystalListener> crystalListeners = new CopyOnWriteArrayList<>();	// these will be used by both
+	private final List<PowerListener> powerListeners = new CopyOnWriteArrayList<>();	// fx thread and bg thread
 	
 	public Impetus() {
 		var crystal = Crystal.valueOf(prefs.get(Crystal.class.getSimpleName(), Crystal.NTSC.name()));
@@ -47,27 +47,27 @@ public class Impetus {
 	
 	private void powerTick() {
 		for (var l : powerListeners) {
-			l.run();
+			l.powerTick();
 		}
 	}
-	private void crystalTick() {
+	private void crystalTick(int howmany) {
 		for (var l : crystalListeners) {
-			l.run();
+			l.crystalTick(howmany);
 		}
 	}
 	
-	public void addCrystalListener(Runnable r) {
+	public void addCrystalListener(CrystalListener r) {
 		if (r == null) throw new NullPointerException("Listener must not be null!");	// shouldn't happen, throw early
 		crystalListeners.add(r);
 	}
-	public void addPowerListener(Runnable r) {
+	public void addPowerListener(PowerListener r) {
 		if (r == null) throw new NullPointerException("Listener must not be null!");	// shouldn't happen, throw early
 		powerListeners.add(r);
 	}
-	public void removeCrystalListener(Runnable r) {
+	public void removeCrystalListener(CrystalListener r) {
 		crystalListeners.remove(r);
 	}
-	public void removePowerListener(Runnable r) {
+	public void removePowerListener(PowerListener r) {
 		powerListeners.remove(r);
 	}
 	
@@ -81,10 +81,9 @@ public class Impetus {
 			powerTick();
 		}
 		crystalTicks += crystalProp.get().cycles * PERIOD;
-		while (crystalTicks >= crystalProp.get().seconds * 1000) {
-			crystalTicks -= crystalProp.get().seconds * 1000;
-			crystalTick();
-		}
+		var howmany = crystalTicks / (crystalProp.get().seconds * 1000);
+		crystalTicks = crystalTicks % (crystalProp.get().seconds * 1000);
+		crystalTick(howmany);
 	}
 	
 	public void shutdown() {

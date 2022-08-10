@@ -4,8 +4,8 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import us.malfeasant.commode64.machine.Machine;
 import us.malfeasant.commode64.timing.Impetus;
-
 
 /**
  * JavaFX App
@@ -18,6 +18,9 @@ public class App extends Application {
         // TODO: more thorough arg parsing
         
     	var imp = new Impetus();
+    	var machine = new Machine();
+    	imp.addCrystalListener(machine);
+    	imp.addPowerListener(machine);
     	
     	stage.setOnCloseRequest(e -> {
     		// TODO determine if anything should be saved- disk image or similar?

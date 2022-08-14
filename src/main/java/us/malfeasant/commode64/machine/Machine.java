@@ -1,7 +1,5 @@
 package us.malfeasant.commode64.machine;
 
-import java.util.Random;
-
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.image.Image;
@@ -20,13 +18,8 @@ public class Machine implements CrystalListener, PowerListener {
 		image = new WritableImage(520, 262);
 		imageProperty = new SimpleObjectProperty<>(image);	// image that we render into		
 	}
-	private final Random rand = new Random();
 	public void powerTick() {
-		for (int y = 0; y < image.getHeight(); y++) {
-			for (int x = 0; x < image.getWidth(); x++) {
-				image.getPixelWriter().setArgb(x, y, rand.nextInt());
-			}
-		}
+		// TODO
 	}
 	
 	public void crystalTick(int howmany) {

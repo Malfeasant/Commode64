@@ -25,10 +25,11 @@ public class App extends Application {
     	imp.addCrystalListener(machine);
     	imp.addPowerListener(machine);
     	machine.bindImageProperty(view.imageProperty());
+    	imp.start();
     	
     	stage.setOnCloseRequest(e -> {
     		// TODO determine if anything should be saved- disk image or similar?
-    		imp.shutdown();
+    		imp.stop();
     	});
     	
         var pane = new BorderPane(view);

@@ -2,9 +2,9 @@ package us.malfeasant.commode64.timing;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.prefs.Preferences;
 
 import javafx.animation.AnimationTimer;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 /**
@@ -21,8 +21,6 @@ import javafx.beans.property.SimpleObjectProperty;
 public class Impetus extends AnimationTimer {
 	private long then;	// used to calculate how much time has elapsed since last run
 	
-	private final Preferences prefs = Preferences.userNodeForPackage(getClass());
-	
 	private final SimpleObjectProperty<Crystal> crystalProp;
 	private final SimpleObjectProperty<Power> powerProp;
 	
@@ -30,11 +28,8 @@ public class Impetus extends AnimationTimer {
 	private final List<PowerListener> powerListeners = new CopyOnWriteArrayList<>();	// fx thread and bg thread
 	
 	public Impetus() {
-		var crystal = Crystal.valueOf(prefs.get(Crystal.class.getSimpleName(), Crystal.NTSC.name()));
-		var power = Power.valueOf(prefs.get(Power.class.getSimpleName(), Power.NA.name()));
-		
-		crystalProp = new SimpleObjectProperty<>(crystal);
-		powerProp = new SimpleObjectProperty<>(power);
+		crystalProp = new SimpleObjectProperty<>();
+		powerProp = new SimpleObjectProperty<>();
 	}
 	
 	private void powerTick() {
@@ -82,5 +77,13 @@ public class Impetus extends AnimationTimer {
 			crystalTick((int) howmany);
 		}
 		then = now;
+	}
+	
+	public ObjectProperty<Power> powerProp() {
+		return powerProp;
+	}
+	
+	public ObjectProperty<Crystal> crystalProp() {
+		return crystalProp;
 	}
 }

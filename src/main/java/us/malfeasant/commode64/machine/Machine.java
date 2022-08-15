@@ -2,6 +2,7 @@ package us.malfeasant.commode64.machine;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import us.malfeasant.commode64.timing.CrystalListener;
@@ -13,10 +14,12 @@ import us.malfeasant.commode64.timing.PowerListener;
  */
 public class Machine implements CrystalListener, PowerListener {
 	private final ObjectProperty<Image> imageProperty;
+	private final ObjectProperty<Rectangle2D> viewportProperty;
 	private final WritableImage image;
 	public Machine() {
 		image = new WritableImage(520, 262);
 		imageProperty = new SimpleObjectProperty<>(image);	// image that we render into		
+		viewportProperty = new SimpleObjectProperty<>();	// image that we render into		
 	}
 	public void powerTick() {
 		// TODO
@@ -26,7 +29,11 @@ public class Machine implements CrystalListener, PowerListener {
 		// TODO
 	}
 	
-	public void bindImageProperty(ObjectProperty<Image> other) {
-		other.bind(imageProperty);
+	public ObjectProperty<Image> imageProperty() {
+		return imageProperty;
+	}
+	
+	public ObjectProperty<Rectangle2D> viewportProperty() {
+		return viewportProperty;
 	}
 }

@@ -1,30 +1,41 @@
 package us.malfeasant.commode64;
 
+import java.util.prefs.Preferences;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import us.malfeasant.commode64.machine.Machine;
+import us.malfeasant.commode64.timing.Crystal;
 import us.malfeasant.commode64.timing.Impetus;
+import us.malfeasant.commode64.timing.Power;
 
 /**
  * JavaFX App
  */
 public class App extends Application {
-
+	private final Preferences prefs = Preferences.userNodeForPackage(getClass());
+	
     @Override
     public void start(Stage stage) {
         //final Parameters params = getParameters();
         // TODO: more thorough arg parsing
-        
-    	var view = new ImageView();
     	
+    	// TODO controls for crystal/power, for now just pull from prefs
+    	Crystal crys = Crystal.valueOf(prefs.get(Crystal.class.getSimpleName(), Crystal.NTSC.name()));
+    	Power power = Power.valueOf(prefs.get(Power.class.getSimpleName(), Power.NA.name()));
+    	
+    	var view = new ImageView();
     	var imp = new Impetus();
     	var machine = new Machine();
     	imp.addCrystalListener(machine);
     	imp.addPowerListener(machine);
-    	machine.bindImageProperty(view.imageProperty());
+    	view.imageProperty().bind(machine.imageProperty());
+    	view.viewportProperty().bind(machine.viewportProperty());
+    	imp.crystalProp().set(crys);
+    	imp.powerProp().set(power);
     	imp.start();
     	
     	stage.setOnCloseRequest(e -> {

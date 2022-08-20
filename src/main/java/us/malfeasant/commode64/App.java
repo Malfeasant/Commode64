@@ -8,9 +8,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import us.malfeasant.commode64.machine.Machine;
-import us.malfeasant.commode64.timing.Crystal;
 import us.malfeasant.commode64.timing.Impetus;
-import us.malfeasant.commode64.timing.Power;
 
 /**
  * JavaFX App
@@ -24,8 +22,7 @@ public class App extends Application {
         // TODO: more thorough arg parsing
     	
     	// TODO controls for crystal/power, for now just pull from prefs
-    	Crystal crys = Crystal.valueOf(prefs.get(Crystal.class.getSimpleName(), Crystal.NTSC.name()));
-    	Power power = Power.valueOf(prefs.get(Power.class.getSimpleName(), Power.NA.name()));
+    	var config = Config.getDefault();
     	
     	var view = new ImageView();
     	var imp = new Impetus();
@@ -34,8 +31,8 @@ public class App extends Application {
     	imp.addPowerListener(machine);
     	view.imageProperty().bind(machine.imageProperty());
     	view.viewportProperty().bind(machine.viewportProperty());
-    	imp.crystalProp().set(crys);
-    	imp.powerProp().set(power);
+    	imp.crystalProp().bind(config.crystalProperty());
+    	imp.powerProp().bind(config.powerProperty());
     	imp.start();
     	
     	stage.setOnCloseRequest(e -> {

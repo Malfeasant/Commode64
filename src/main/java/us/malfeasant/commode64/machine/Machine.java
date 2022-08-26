@@ -1,10 +1,12 @@
 package us.malfeasant.commode64.machine;
 
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
-import javafx.scene.image.WritableImage;
+import us.malfeasant.commode64.machine.video.Variant;
+import us.malfeasant.commode64.machine.video.Video;
 import us.malfeasant.commode64.timing.CrystalListener;
 import us.malfeasant.commode64.timing.PowerListener;
 
@@ -13,13 +15,11 @@ import us.malfeasant.commode64.timing.PowerListener;
  * @author Malfeasant
  */
 public class Machine implements CrystalListener, PowerListener {
-	private final ObjectProperty<Image> imageProperty;
-	private final ObjectProperty<Rectangle2D> viewportProperty;
-	private final WritableImage image;
+	private Video video;
+	private final ObjectProperty<Variant> variantProperty;
 	public Machine() {
-		image = new WritableImage(520, 262);
-		imageProperty = new SimpleObjectProperty<>(image);	// image that we render into		
-		viewportProperty = new SimpleObjectProperty<>();	// image that we render into		
+		video = new Video();
+		variantProperty = new SimpleObjectProperty<>();
 	}
 	public void powerTick() {
 		// TODO
@@ -29,11 +29,13 @@ public class Machine implements CrystalListener, PowerListener {
 		// TODO
 	}
 	
-	public ObjectProperty<Image> imageProperty() {
-		return imageProperty;
+	public ReadOnlyObjectProperty<Image> imageProperty() {
+		return video.imageProperty();
 	}
-	
-	public ObjectProperty<Rectangle2D> viewportProperty() {
-		return viewportProperty;
+	public ReadOnlyObjectProperty<Rectangle2D> viewportProperty() {
+		return video.viewportProperty();
+	}
+	public ObjectProperty<Variant> variantProperty() {
+		return variantProperty;
 	}
 }

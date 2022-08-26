@@ -27,6 +27,7 @@ public class App extends Application {
     	var view = new ImageView();
     	var imp = new Impetus();
     	var machine = new Machine();
+    	machine.variantProperty().bind(config.variantProperty());
     	imp.addCrystalListener(machine);
     	imp.addPowerListener(machine);
     	view.imageProperty().bind(machine.imageProperty());

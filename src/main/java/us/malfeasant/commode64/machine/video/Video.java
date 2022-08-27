@@ -7,12 +7,10 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 
 public class Video {
-	private final WritableImage image;
-	private final ReadOnlyObjectWrapper<Image> imageProperty;
+	private final ReadOnlyObjectWrapper<WritableImage> imageProperty;
 	private final ReadOnlyObjectWrapper<Rectangle2D> viewportProperty;
 	private final ObjectProperty<ByteBuffer> memoryProperty;	// points to 16k block of RAM
 	private final ObjectProperty<Variant> variantProperty;	// chip revision bits
@@ -21,13 +19,17 @@ public class Video {
 	int rasterLine;
 	
 	public Video() {
-		image = new WritableImage(520, 262);
-		imageProperty = new ReadOnlyObjectWrapper<>(image);	// image that we render into
+		imageProperty = new ReadOnlyObjectWrapper<>();	// image that we render into
 		viewportProperty = new ReadOnlyObjectWrapper<>();	// crops the image
 		memoryProperty = new SimpleObjectProperty<>();
 		variantProperty = new SimpleObjectProperty<>();
+		
+		variantProperty.addListener((b, then, now) -> {	// if variant is changed, need to change image and viewport
+			imageProperty.set(new WritableImage(now.endOfLine * 8, now.endOfFrame));
+			viewportProperty.set(now.viewport);	// TODO get from variant
+		});
 	}
-	public ReadOnlyObjectProperty<Image> imageProperty() {
+	public ReadOnlyObjectProperty<WritableImage> imageProperty() {
 		return imageProperty.getReadOnlyProperty();
 	}
 	public ReadOnlyObjectProperty<Rectangle2D> viewportProperty() {
@@ -41,10 +43,9 @@ public class Video {
 	}
 	/**
 	 * Advances one cpu clock cycle- so 8 pixel clock cycles.  Does c-access, if needed/allowed does g-access as well. 
-	 * @return 8x 4-bit pixels packed as an int
 	 */
-	public int getPixelBlock() {
+	public void crystalTick() {
 		variantProperty.get().advance(this);
-		return 0;	// TODO
+		// TODO more
 	}
 }

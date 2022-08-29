@@ -14,9 +14,12 @@ import us.malfeasant.commode64.timing.PowerListener;
  * @author Malfeasant
  */
 public class Machine implements CrystalListener, PowerListener {
-	private Video video;
+	private final Video video;
+	private final Memory memory;
+	
 	public Machine() {
 		video = new Video();
+		memory = new Memory();
 	}
 	public void powerTick() {
 		// TODO

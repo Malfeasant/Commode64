@@ -20,6 +20,7 @@ public class Machine implements CrystalListener, PowerListener {
 	public Machine() {
 		video = new Video();
 		memory = new Memory();
+		video.memoryProperty.set(memory);
 	}
 	public void powerTick() {
 		// TODO
@@ -34,12 +35,12 @@ public class Machine implements CrystalListener, PowerListener {
 	}
 	
 	public ReadOnlyObjectProperty<WritableImage> imageProperty() {
-		return video.imageProperty();
+		return video.imageProperty;
 	}
 	public ReadOnlyObjectProperty<Rectangle2D> viewportProperty() {
-		return video.viewportProperty();
+		return video.viewportProperty;
 	}
 	public ObjectProperty<Variant> variantProperty() {
-		return video.variantProperty();
+		return video.variantProperty;
 	}
 }

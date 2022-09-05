@@ -1,45 +1,37 @@
 package us.malfeasant.commode64.machine.video;
 
-import java.nio.ByteBuffer;
-
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.WritableImage;
+import us.malfeasant.commode64.machine.Memory;
 
 public class Video {
-	private final ReadOnlyObjectWrapper<WritableImage> imageProperty;
-	private final ReadOnlyObjectWrapper<Rectangle2D> viewportProperty;
-	private final ObjectProperty<ByteBuffer> memoryProperty;	// points to 16k block of RAM
-	private final ObjectProperty<Variant> variantProperty;	// chip revision bits
+	private final ReadOnlyObjectWrapper<WritableImage> imageWrapper;
+	private final ReadOnlyObjectWrapper<Rectangle2D> viewportWrapper;
+	
+	public final ReadOnlyObjectProperty<WritableImage> imageProperty;
+	public final ReadOnlyObjectProperty<Rectangle2D> viewportProperty;
+	public final ObjectProperty<Memory> memoryProperty;	// points to memory handler
+	public final ObjectProperty<Variant> variantProperty;	// chip revision bits
 	
 	int rasterByte;
 	int rasterLine;
 	
 	public Video() {
-		imageProperty = new ReadOnlyObjectWrapper<>();	// image that we render into
-		viewportProperty = new ReadOnlyObjectWrapper<>();	// crops the image
+		imageWrapper = new ReadOnlyObjectWrapper<>();	// image that we render into
+		imageProperty = imageWrapper.getReadOnlyProperty();
+		viewportWrapper = new ReadOnlyObjectWrapper<>();	// crops the image
+		viewportProperty = viewportWrapper.getReadOnlyProperty();
 		memoryProperty = new SimpleObjectProperty<>();
 		variantProperty = new SimpleObjectProperty<>();
 		
 		variantProperty.addListener((b, then, now) -> {	// if variant is changed, need to change image and viewport
-			imageProperty.set(new WritableImage(now.endOfLine * 8, now.endOfFrame));
-			viewportProperty.set(now.viewport);	// TODO get from variant
+			imageWrapper.set(new WritableImage(now.endOfLine * 8, now.endOfFrame));
+			viewportWrapper.set(now.viewport);	// TODO get from variant
 		});
-	}
-	public ReadOnlyObjectProperty<WritableImage> imageProperty() {
-		return imageProperty.getReadOnlyProperty();
-	}
-	public ReadOnlyObjectProperty<Rectangle2D> viewportProperty() {
-		return viewportProperty.getReadOnlyProperty();
-	}
-	public ObjectProperty<ByteBuffer> memoryProperty() {
-		return memoryProperty;
-	}
-	public ObjectProperty<Variant> variantProperty() {
-		return variantProperty;
 	}
 	/**
 	 * Advances one cpu clock cycle- so 8 pixel clock cycles.  Does c-access, if needed/allowed does g-access as well. 

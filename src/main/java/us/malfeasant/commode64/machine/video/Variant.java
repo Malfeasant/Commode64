@@ -14,7 +14,6 @@ import javafx.geometry.Rectangle2D;
  * 
  * This class houses all of the magic numbers- some that mark special cycles, i.e. end of line, end of frame,
  * when to start sprite fetches, and other stuff like viewport dimensions... more to come probably...
- * Further, the main action of processing a clock cycle happens here- inversion of control.
  * @author Malfeasant
  */
 public enum Variant {
@@ -28,18 +27,16 @@ public enum Variant {
 			76, 16, 403, 284);
 	final int endOfLine;
 	final int endOfFrame;
+	// The following are fixed relative to either the beginning (+) or end (-) of line
+	final int gFetchStart = 15;	// c fetch starts 1 cycle before!
+	final int gFetchEnd = 55;
+	final int sFetchStart = -6;	// then every 2 after
+	final int refreshStart = 10;
 	final Rectangle2D viewport;
 	Variant(int eol, int eof,
 			int vpx, int vpy, int vpw, int vph) {
 		endOfLine = eol;
 		endOfFrame = eof;
 		viewport = new Rectangle2D(vpx, vpy, vpw, vph);
-	}
-	
-	void advance(Video v) {
-		v.rasterByte++;
-		if (v.rasterByte > endOfLine) {
-			v.rasterByte = 0;
-		}
 	}
 }

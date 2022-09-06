@@ -57,7 +57,8 @@ public class Video {
 		lineBuffer = new short[40];
 	}
 	/**
-	 * Advances one cpu clock cycle- so 8 pixel clock cycles.  Does c-access, if needed/allowed does g-access as well. 
+	 * Advances one cpu clock cycle- so 8 pixel clock cycles.  Does c-access, if needed/allowed does g-access as well.
+	 * Also s-access for sprites. 
 	 */
 	public void crystalTick() {
 		var variant = variantProperty.get();

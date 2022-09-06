@@ -17,13 +17,13 @@ import javafx.geometry.Rectangle2D;
  * @author Malfeasant
  */
 public enum Variant {
-	NTSC_OLD(63, 233,
+	NTSC_OLD(63, 261,
 			76, 41, 411, 234),
-	NTSC_NEW(64, 234,
+	NTSC_NEW(64, 262,
 			77, 41, 418, 235),
-	PAL_OLD(62, 283,
+	PAL_OLD(62, 311,
 			76, 16, 403, 284),
-	PAL_NEW(62, 283,
+	PAL_NEW(62, 311,
 			76, 16, 403, 284);
 	final int endOfLine;
 	final int endOfFrame;

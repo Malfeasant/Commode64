@@ -18,13 +18,466 @@ package us.malfeasant.commode64.machine.video;
  * @author Malfeasant
  */
 public enum CycleType {
-	S0P, S0S, S1P, S1S, S2P, S2S, S3P, S3S, S4P, S4S, S5P, S5S, S6P, S6S, S7P, S7S,	// sprite 
-	R0, R1, R2, R3, R4,	// refresh cycles
-	G00, G01, G02, G03, G04, G05, G06, G07, G08, G09,
-	G10, G11, G12, G13, G14, G15, G16, G17, G18, G19,
-	G20, G21, G22, G23, G24, G25, G26, G27, G28, G29,
-	G30, G31, G32, G33, G34, G35, G36, G37, G38, G39,
-	I;	// multiple idle cycles, how many depends on variant.
+	S0P {
+		@Override
+		void next(Video v) {
+			// TODO Sprite pointer fetch 
+			// If enabled, steal a cpu cycle for first byte fetch.
+		}
+	},
+	S0S {
+		@Override
+		void next(Video v) {
+			// TODO If enabled, fetch second byte, else idle
+			// If enabled, steal a cpu cycle for third byte fetch.
+			// Check if Sprite 2 enabled, if so negate BA
+		}
+	},
+	S1P {
+		@Override
+		void next(Video v) {
+			// TODO Sprite pointer fetch 
+			// If enabled, steal a cpu cycle for first byte fetch.
+		}
+	},
+	S1S {
+		@Override
+		void next(Video v) {
+			// TODO If enabled, fetch second byte, else idle
+			// If enabled, steal a cpu cycle for third byte fetch.
+			// Check if Sprite 3 enabled, if so negate BA
+		}
+	},
+	S2P {
+		@Override
+		void next(Video v) {
+			// TODO Sprite pointer fetch 
+			// If enabled, steal a cpu cycle for first byte fetch.
+		}
+	},
+	S2S {
+		@Override
+		void next(Video v) {
+			// TODO If enabled, fetch second byte, else idle
+			// If enabled, steal a cpu cycle for third byte fetch.
+			// Check if Sprite 4 enabled, if so negate BA
+		}
+	},
+	S3P {
+		@Override
+		void next(Video v) {
+			// TODO Sprite pointer fetch 
+			// If enabled, steal a cpu cycle for first byte fetch.
+		}
+	},
+	S3S {
+		@Override
+		void next(Video v) {
+			// TODO If enabled, fetch second byte, else idle
+			// If enabled, steal a cpu cycle for third byte fetch.
+			// Check if Sprite 5 enabled, if so negate BA
+		}
+	},
+	S4P {
+		@Override
+		void next(Video v) {
+			// TODO Sprite pointer fetch 
+			// If enabled, steal a cpu cycle for first byte fetch.
+		}
+	},
+	S4S {
+		@Override
+		void next(Video v) {
+			// TODO If enabled, fetch second byte, else idle
+			// If enabled, steal a cpu cycle for third byte fetch.
+			// Check if Sprite 6 enabled, if so negate BA
+		}
+	},
+	S5P {
+		@Override
+		void next(Video v) {
+			// TODO Sprite pointer fetch 
+			// If enabled, steal a cpu cycle for first byte fetch.
+		}
+	},
+	S5S {
+		@Override
+		void next(Video v) {
+			// TODO If enabled, fetch second byte, else idle
+			// If enabled, steal a cpu cycle for third byte fetch.
+			// Check if Sprite 7 enabled, if so negate BA
+		}
+	},
+	S6P {
+		@Override
+		void next(Video v) {
+			// TODO Sprite pointer fetch 
+			// If enabled, steal a cpu cycle for first byte fetch.
+		}
+	},
+	S6S {
+		@Override
+		void next(Video v) {
+			// TODO If enabled, fetch second byte, else idle
+			// If enabled, steal a cpu cycle for third byte fetch.
+		}
+	},
+	S7P {
+		@Override
+		void next(Video v) {
+			// TODO Sprite pointer fetch 
+			// If enabled, steal a cpu cycle for first byte fetch.
+		}
+	},
+	S7S {
+		@Override
+		void next(Video v) {
+			// TODO If enabled, fetch second byte, else idle
+			// If enabled, steal a cpu cycle for third byte fetch.
+		}
+	},
+	R0 {
+		@Override
+		void next(Video v) {
+			// TODO refresh cycle, inc counter
+		}
+	},
+	R1 {
+		@Override
+		void next(Video v) {
+			// TODO refresh cycle, inc counter
+			// check if badline coming- if so, negate BA
+		}
+	},
+	R2 {
+		@Override
+		void next(Video v) {
+			// TODO refresh cycle, inc counter
+		}
+	},
+	R3 {
+		@Override
+		void next(Video v) {
+			// TODO refresh cycle, inc counter
+		}
+	},
+	R4 {
+		@Override
+		void next(Video v) {
+			// TODO refresh cycle, inc counter
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G00 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G01 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G02 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G03 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G04 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G05 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G06 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G07 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G08 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G09 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G10 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G11 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G12 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G13 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G14 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G15 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G16 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G17 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G18 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G19 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G20 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G21 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G22 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G23 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G24 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G25 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G26 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G27 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G28 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G29 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G30 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G31 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G32 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G33 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G34 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G35 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G36 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G37 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G38 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if badline, steal cycle for c fetch
+		}
+	},
+	G39 {
+		@Override
+		void next(Video v) {
+			// TODO g fetch
+			// if 6569 & Sprite 0 enabled, negate BA
+		}
+	},
+	I0 {
+		@Override
+		void next(Video v) {
+			// TODO Idle fetch
+			// if 6567R56A & Sprite 0 enabled, negate BA
+		}
+	},
+	I1 {
+		@Override
+		void next(Video v) {
+			// TODO Idle fetch
+			// if 6567R8 & Sprite 0 enabled, negate BA
+			// if 6569 & Sprite 1 enabled, negate BA
+		}
+	},
+	I2 {
+		@Override
+		void next(Video v) {
+			// TODO Idle fetch
+			// if 6567R56A & Sprite 1 enabled, negate BA
+		}
+	},
+	I3 {
+		@Override
+		void next(Video v) {
+			// TODO Idle fetch
+			// I3: if 6567R8 & Sprite 1 enabled, negate BA
+		}
+	},
+	;
 	/**
 	 * Inversion of control- most of state is kept in Video class, what changes is the action needing to be done.
 	 * @param v a video instance to modify

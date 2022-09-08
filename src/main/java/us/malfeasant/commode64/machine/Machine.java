@@ -1,5 +1,7 @@
 package us.malfeasant.commode64.machine;
 
+import java.util.Arrays;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.geometry.Rectangle2D;

@@ -37,6 +37,11 @@ public class Video {
 	private long outBuffer;	// stores character pixels- each new pixel added shifts to left
 	// where these are read from depends on smooth scrolling register
 	
+	CycleType currentCycle;
+	int vmbase = 0;	// 4 bits from d018, determines where video matrix (and sprite pointers) appear
+	
+	int[] spritePointers = new int[8];	// where to fetch sprite data from
+	
 	public Video() {
 		imageWrapper = new ReadOnlyObjectWrapper<>();	// image that we render into
 		imageProperty = imageWrapper.getReadOnlyProperty();
@@ -51,23 +56,19 @@ public class Video {
 		
 		variantProperty.addListener((b, then, now) -> {	// if variant is changed, need to change image and viewport
 			imageWrapper.set(new WritableImage(now.endOfLine * 8, now.endOfFrame));
-			viewportWrapper.set(now.viewport);	// TODO get from variant
+			viewportWrapper.set(now.viewport);
 		});
 		
 		lineBuffer = new short[40];
+		
+		currentCycle = CycleType.values()[0];
 	}
 	/**
 	 * Advances one cpu clock cycle- so 8 pixel clock cycles.  Does c-access, if needed/allowed does g-access as well.
 	 * Also s-access for sprites. 
 	 */
 	public void crystalTick() {
-		var variant = variantProperty.get();
-		if (++rasterByte > variant.endOfLine) {
-			rasterByte = 0;
-			if (++rasterLine > variant.endOfFrame) {
-				rasterLine = 0;
-			}
-		}
+		currentCycle.advance(this);	// modifies internal state, including replacing currentCycle with the next
 		
 		// TODO more
 	}

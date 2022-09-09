@@ -1,5 +1,7 @@
 package us.malfeasant.commode64.machine.video;
-
+// TODO I think I want to split these- so each item has a firsthalf and secondhalf cycle- and only call secondhalf if
+// ba has gone to 0 so ok to steal a cycle... and rather than doing the fetches directly, they should set an address
+// variable in the passed video object, then let it do the fetch- otherwise no way to modify addr in case of ecm...
 /**
  * Let's try as a state machine... 
  * http://www.unusedino.de/ec64/technical/misc/vic656x/vic656x.html has been crucial in figuring out how to model
@@ -21,22 +23,36 @@ public enum CycleType {
 	S0P {
 		@Override
 		void advance(Video v) {
-			v.spritePointers[0] = v.memoryProperty.get().vread(v.vmbase + 0x3f8);
+			v.spriteCounter = (v.memoryProperty.get().vread(v.vmbase + 0x3f8)) << 6;
 			// If enabled, steal a cpu cycle for first byte fetch.
+			if ((v.preBA == 0) && v.sprites[0].enabled) {
+				v.sprites[0].sequencer = (v.memoryProperty.get().vread(v.spriteCounter)) << 16;
+			}
+			v.spriteCounter++;	// increment 
 		}
 	},
 	S0S {
 		@Override
 		void advance(Video v) {
-			// TODO If enabled, fetch second byte, else idle
+			// If enabled, fetch second byte, else idle
+			if ((v.preBA == 0) && v.sprites[0].enabled) {
+				v.sprites[0].sequencer |= (v.memoryProperty.get().vread(v.spriteCounter)) << 8;
+			} else {
+				v.memoryProperty.get().vread(0x3fff);	// idle
+			}
+			v.spriteCounter++;	// increment 
 			// If enabled, steal a cpu cycle for third byte fetch.
+			if ((v.preBA == 0) && v.sprites[0].enabled) {
+				v.sprites[0].sequencer |= v.memoryProperty.get().vread(v.spriteCounter);
+			}
+			v.spriteCounter++;	// increment 
 			// Check if Sprite 2 enabled, if so negate BA
 		}
 	},
 	S1P {
 		@Override
 		void advance(Video v) {
-			v.spritePointers[1] = v.memoryProperty.get().vread(v.vmbase + 0x3f9);
+			v.spriteCounter = v.memoryProperty.get().vread(v.vmbase + 0x3f9);
 			// If enabled, steal a cpu cycle for first byte fetch.
 		}
 	},
@@ -51,7 +67,7 @@ public enum CycleType {
 	S2P {
 		@Override
 		void advance(Video v) {
-			v.spritePointers[2] = v.memoryProperty.get().vread(v.vmbase + 0x3fa);
+			v.spriteCounter = v.memoryProperty.get().vread(v.vmbase + 0x3fa);
 			// If enabled, steal a cpu cycle for first byte fetch.
 		}
 	},
@@ -66,7 +82,7 @@ public enum CycleType {
 	S3P {
 		@Override
 		void advance(Video v) {
-			v.spritePointers[3] = v.memoryProperty.get().vread(v.vmbase + 0x3fb);
+			v.spriteCounter = v.memoryProperty.get().vread(v.vmbase + 0x3fb);
 			// If enabled, steal a cpu cycle for first byte fetch.
 		}
 	},
@@ -81,7 +97,7 @@ public enum CycleType {
 	S4P {
 		@Override
 		void advance(Video v) {
-			v.spritePointers[4] = v.memoryProperty.get().vread(v.vmbase + 0x3fc);
+			v.spriteCounter = v.memoryProperty.get().vread(v.vmbase + 0x3fc);
 			// If enabled, steal a cpu cycle for first byte fetch.
 		}
 	},
@@ -96,7 +112,7 @@ public enum CycleType {
 	S5P {
 		@Override
 		void advance(Video v) {
-			v.spritePointers[5] = v.memoryProperty.get().vread(v.vmbase + 0x3fd);
+			v.spriteCounter = v.memoryProperty.get().vread(v.vmbase + 0x3fd);
 			// If enabled, steal a cpu cycle for first byte fetch.
 		}
 	},
@@ -111,7 +127,7 @@ public enum CycleType {
 	S6P {
 		@Override
 		void advance(Video v) {
-			v.spritePointers[6] = v.memoryProperty.get().vread(v.vmbase + 0x3fe);
+			v.spriteCounter = v.memoryProperty.get().vread(v.vmbase + 0x3fe);
 			// If enabled, steal a cpu cycle for first byte fetch.
 		}
 	},
@@ -125,7 +141,7 @@ public enum CycleType {
 	S7P {
 		@Override
 		void advance(Video v) {
-			v.spritePointers[7] = v.memoryProperty.get().vread(v.vmbase + 0x3ff);
+			v.spriteCounter = v.memoryProperty.get().vread(v.vmbase + 0x3ff);
 			// If enabled, steal a cpu cycle for first byte fetch.
 		}
 	},

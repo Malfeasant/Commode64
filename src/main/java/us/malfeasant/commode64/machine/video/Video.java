@@ -13,7 +13,7 @@ import us.malfeasant.commode64.machine.Memory;
 public class Video {
 	private final ReadOnlyObjectWrapper<WritableImage> imageWrapper;
 	private final ReadOnlyObjectWrapper<Rectangle2D> viewportWrapper;
-	private final ReadOnlyBooleanWrapper baWrapper;
+	final ReadOnlyBooleanWrapper baWrapper;
 	private final ReadOnlyBooleanWrapper aecWrapper;
 	
 	public final ReadOnlyObjectProperty<WritableImage> imageProperty;
@@ -40,9 +40,15 @@ public class Video {
 	int vmbase = 0;	// 4 bits from d018, determines where video matrix (and sprite pointers) come from
 	int chbase = 0;	// 3 bits from d018, determines where character fetches come from
 	
+	int address;	// temporarily holds address before placing on bus
+	
 	boolean bad;	// ongoing bad line condition- will be stealing cycles for c fetches
 	boolean aec;	// if true, cpu can run bus cycle.  if false, vic will be stealing a cycle.
 	int preBA = 4;	// counts cycles between asserting ba and aec- if ba=0, ok to steal a cycle
+	
+	boolean ecm = false;	// extended color mode
+	boolean bmm = false;	// bitmap mode
+	boolean mcm = false;	// multicolor mode
 	
 	int spriteCounter = 0;	// where to fetch sprite data from (loaded with p cycle, used for each s cycle
 	final Sprite[] sprites;
@@ -75,8 +81,8 @@ public class Video {
 	 * Also s-access for sprites. 
 	 */
 	public void crystalTick() {
-		currentCycle.advance(this);	// modifies internal state, including replacing currentCycle with the next
-		
+		currentCycle.clockLo(this);	// modifies internal state, including replacing currentCycle with the next
+		// TODO check if ok to steal cycle, do clockHi()
 		// TODO more
 	}
 	

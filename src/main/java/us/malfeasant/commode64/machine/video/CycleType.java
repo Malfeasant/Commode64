@@ -7,8 +7,8 @@ package us.malfeasant.commode64.machine.video;
  * http://www.unusedino.de/ec64/technical/misc/vic656x/vic656x.html has been crucial in figuring out how to model
  * bus cycles- but it has one weakness.  It considers the "beginning" of a line to be when the IRQ from a raster
  * interrupt is triggered- but this shifts around the special cycles between the different variants (NTSC/PAL old
- * and new).  It is more likely that there is no "cycle number" counter in the chip at all, or if there is, it has
- * there is no reason that it increments the line at 0- in fact the 6567's datasheet-
+ * and new).  It is more likely that there is no "cycle number" counter in the chip at all, or if there is, there
+ * is no reason that it increments the line at 0- in fact the 6567's datasheet-
  * http://archive.6502.org/datasheets/mos_6567_vic_ii_preliminary.pdf pretty much confirms that the "Increment
  * vertical counter" is based on a pixel x-position near to the "end" of the line.  The fact that the IRQ interrupt
  * comes one cycle later in raster line 0 backs up this hypothesis- the line is incremented, it goes one beyond its
@@ -22,475 +22,857 @@ package us.malfeasant.commode64.machine.video;
 public enum CycleType {
 	S0P {
 		@Override
-		void advance(Video v) {
-			v.spriteCounter = (v.memoryProperty.get().vread(v.vmbase + 0x3f8)) << 6;
+		void clockLo(Video v) {
+			// fetch sprite pointer
+			spfetch(v, 0);
+		}
+
+		@Override
+		void clockHi(Video v) {
 			// If enabled, steal a cpu cycle for first byte fetch.
-			if ((v.preBA == 0) && v.sprites[0].enabled) {
-				v.sprites[0].sequencer = (v.memoryProperty.get().vread(v.spriteCounter)) << 16;
-			}
-			v.spriteCounter++;	// increment 
+			sdfetch1(v, 0);
 		}
 	},
 	S0S {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// If enabled, fetch second byte, else idle
-			if ((v.preBA == 0) && v.sprites[0].enabled) {
-				v.sprites[0].sequencer |= (v.memoryProperty.get().vread(v.spriteCounter)) << 8;
-			} else {
-				v.memoryProperty.get().vread(0x3fff);	// idle
-			}
-			v.spriteCounter++;	// increment 
-			// If enabled, steal a cpu cycle for third byte fetch.
-			if ((v.preBA == 0) && v.sprites[0].enabled) {
-				v.sprites[0].sequencer |= v.memoryProperty.get().vread(v.spriteCounter);
-			}
-			v.spriteCounter++;	// increment 
+			sdfetch2(v, 0);
 			// Check if Sprite 2 enabled, if so negate BA
+			if (v.sprites[2].enabled) v.baWrapper.set(false);
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// If enabled, steal a cpu cycle for third byte fetch.
+			sdfetch3(v, 0);
 		}
 	},
 	S1P {
 		@Override
-		void advance(Video v) {
-			v.spriteCounter = v.memoryProperty.get().vread(v.vmbase + 0x3f9);
+		void clockLo(Video v) {
+			// fetch sprite pointer
+			spfetch(v, 1);
+		}
+
+		@Override
+		void clockHi(Video v) {
 			// If enabled, steal a cpu cycle for first byte fetch.
+			sdfetch1(v, 1);
 		}
 	},
 	S1S {
 		@Override
-		void advance(Video v) {
-			// TODO If enabled, fetch second byte, else idle
-			// If enabled, steal a cpu cycle for third byte fetch.
+		void clockLo(Video v) {
+			// If enabled, fetch second byte, else idle
+			sdfetch2(v, 0);
 			// Check if Sprite 3 enabled, if so negate BA
+			if (v.sprites[3].enabled) v.baWrapper.set(false);
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// If enabled, steal a cpu cycle for third byte fetch.
+			sdfetch3(v, 1);
 		}
 	},
 	S2P {
 		@Override
-		void advance(Video v) {
-			v.spriteCounter = v.memoryProperty.get().vread(v.vmbase + 0x3fa);
+		void clockLo(Video v) {
+			// fetch sprite pointer
+			spfetch(v, 2);
+		}
+
+		@Override
+		void clockHi(Video v) {
 			// If enabled, steal a cpu cycle for first byte fetch.
+			sdfetch1(v, 2);
 		}
 	},
 	S2S {
 		@Override
-		void advance(Video v) {
-			// TODO If enabled, fetch second byte, else idle
-			// If enabled, steal a cpu cycle for third byte fetch.
+		void clockLo(Video v) {
+			// If enabled, fetch second byte, else idle
+			sdfetch2(v, 2);
 			// Check if Sprite 4 enabled, if so negate BA
+			if (v.sprites[4].enabled) v.baWrapper.set(false);
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// If enabled, steal a cpu cycle for third byte fetch.
+			sdfetch3(v, 2);
 		}
 	},
 	S3P {
 		@Override
-		void advance(Video v) {
-			v.spriteCounter = v.memoryProperty.get().vread(v.vmbase + 0x3fb);
+		void clockLo(Video v) {
+			// fetch sprite pointer
+			spfetch(v, 3);
+		}
+
+		@Override
+		void clockHi(Video v) {
 			// If enabled, steal a cpu cycle for first byte fetch.
+			sdfetch1(v, 3);
 		}
 	},
 	S3S {
 		@Override
-		void advance(Video v) {
-			// TODO If enabled, fetch second byte, else idle
-			// If enabled, steal a cpu cycle for third byte fetch.
+		void clockLo(Video v) {
+			// If enabled, fetch second byte, else idle
+			sdfetch2(v, 3);
 			// Check if Sprite 5 enabled, if so negate BA
+			if (v.sprites[5].enabled) v.baWrapper.set(false);
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// If enabled, steal a cpu cycle for third byte fetch.
+			sdfetch3(v, 3);
 		}
 	},
 	S4P {
 		@Override
-		void advance(Video v) {
-			v.spriteCounter = v.memoryProperty.get().vread(v.vmbase + 0x3fc);
+		void clockLo(Video v) {
+			// fetch sprite pointer
+			spfetch(v, 4);
+		}
+
+		@Override
+		void clockHi(Video v) {
 			// If enabled, steal a cpu cycle for first byte fetch.
+			sdfetch1(v, 4);
 		}
 	},
 	S4S {
 		@Override
-		void advance(Video v) {
-			// TODO If enabled, fetch second byte, else idle
-			// If enabled, steal a cpu cycle for third byte fetch.
+		void clockLo(Video v) {
+			// If enabled, fetch second byte, else idle
+			sdfetch2(v, 4);
 			// Check if Sprite 6 enabled, if so negate BA
+			if (v.sprites[6].enabled) v.baWrapper.set(false);
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// If enabled, steal a cpu cycle for third byte fetch.
+			sdfetch3(v, 4);
 		}
 	},
 	S5P {
 		@Override
-		void advance(Video v) {
-			v.spriteCounter = v.memoryProperty.get().vread(v.vmbase + 0x3fd);
+		void clockLo(Video v) {
+			// fetch sprite pointer
+			spfetch(v, 5);
+		}
+
+		@Override
+		void clockHi(Video v) {
 			// If enabled, steal a cpu cycle for first byte fetch.
+			sdfetch1(v, 5);
 		}
 	},
 	S5S {
 		@Override
-		void advance(Video v) {
-			// TODO If enabled, fetch second byte, else idle
-			// If enabled, steal a cpu cycle for third byte fetch.
+		void clockLo(Video v) {
+			// If enabled, fetch second byte, else idle
+			sdfetch2(v, 5);
 			// Check if Sprite 7 enabled, if so negate BA
+			if (v.sprites[6].enabled) v.baWrapper.set(false);
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// If enabled, steal a cpu cycle for third byte fetch.
+			sdfetch3(v, 5);
 		}
 	},
 	S6P {
 		@Override
-		void advance(Video v) {
-			v.spriteCounter = v.memoryProperty.get().vread(v.vmbase + 0x3fe);
+		void clockLo(Video v) {
+			// fetch sprite pointer
+			spfetch(v, 6);
+		}
+
+		@Override
+		void clockHi(Video v) {
 			// If enabled, steal a cpu cycle for first byte fetch.
+			sdfetch1(v, 6);
 		}
 	},
 	S6S {
 		@Override
-		void advance(Video v) {
-			// TODO If enabled, fetch second byte, else idle
+		void clockLo(Video v) {
+			// If enabled, fetch second byte, else idle
+			sdfetch2(v, 6);
+		}
+
+		@Override
+		void clockHi(Video v) {
 			// If enabled, steal a cpu cycle for third byte fetch.
+			sdfetch3(v, 6);
 		}
 	},
 	S7P {
 		@Override
-		void advance(Video v) {
-			v.spriteCounter = v.memoryProperty.get().vread(v.vmbase + 0x3ff);
+		void clockLo(Video v) {
+			// fetch sprite pointer
+			spfetch(v, 7);
+		}
+
+		@Override
+		void clockHi(Video v) {
 			// If enabled, steal a cpu cycle for first byte fetch.
+			sdfetch1(v, 7);
 		}
 	},
 	S7S {
 		@Override
-		void advance(Video v) {
-			// TODO If enabled, fetch second byte, else idle
+		void clockLo(Video v) {
+			// If enabled, fetch second byte, else idle
+			sdfetch2(v, 7);
+		}
+
+		@Override
+		void clockHi(Video v) {
 			// If enabled, steal a cpu cycle for third byte fetch.
+			sdfetch3(v, 7);
 		}
 	},
 	R0 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO refresh cycle, inc counter
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	R1 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO refresh cycle, inc counter
 			// check if badline coming- if so, negate BA
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	R2 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO refresh cycle, inc counter
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	R3 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO refresh cycle, inc counter
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	R4 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO refresh cycle, inc counter
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G00 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G01 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G02 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G03 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G04 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G05 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G06 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G07 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G08 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G09 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G10 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G11 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G12 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G13 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G14 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G15 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G16 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G17 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G18 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G19 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G20 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G21 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G22 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G23 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G24 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G25 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G26 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G27 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G28 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G29 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G30 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G31 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G32 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G33 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G34 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G35 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G36 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G37 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G38 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if badline, steal cycle for c fetch
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	G39 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO g fetch
 			// if 6569 & Sprite 0 enabled, negate BA
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	I0 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO Idle fetch
 			// if 6567R56A & Sprite 0 enabled, negate BA
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	I1 {
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO Idle fetch
 			// if 6567R8 & Sprite 0 enabled, negate BA
 			// if 6569 & Sprite 1 enabled, negate BA
 		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
+		}
 	},
 	I2 {	// 6569 does not include this
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO Idle fetch
 			// if 6567R56A & Sprite 1 enabled, negate BA
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	I3 {	// 6569, 6567R56A do not include this
 		@Override
-		void advance(Video v) {
+		void clockLo(Video v) {
 			// TODO Idle fetch
 			// I3: if 6567R8 & Sprite 1 enabled, negate BA
+		}
+
+		@Override
+		void clockHi(Video v) {
+			// TODO Auto-generated method stub
+			
 		}
 	},
 	;
@@ -498,7 +880,9 @@ public enum CycleType {
 	 * Inversion of control- most of state is kept in Video class, what changes is the action needing to be done.
 	 * @param v a video instance to modify
 	 */
-	abstract void advance(Video v);
+	abstract void clockLo(Video v);
+	abstract void clockHi(Video v);
+	
 	private CycleType nextFor(Variant v) {
 		return (ordinal() >= v.endOfLine) ? values()[0] : values()[ordinal() + 1];
 	}
@@ -508,5 +892,25 @@ public enum CycleType {
 			ord -= v.endOfLine + 1; // again because this is last cycle from 0, not number of
 		}
 		return values()[ord];
+	}
+	void spfetch(Video v, int sprite) {
+		v.spriteCounter = (v.memoryProperty.get().vread(v.vmbase + 0x3f8 + sprite)) << 6;
+	}
+	void sdfetch1(Video v, int sprite) {
+		if ((v.preBA == 0) && v.sprites[sprite].enabled) {
+			v.sprites[sprite].sequencer = (v.memoryProperty.get().vread(v.spriteCounter++)) << 16;
+		}
+	}
+	void sdfetch2(Video v, int sprite) {
+		if (v.sprites[sprite].enabled) {
+			v.sprites[sprite].sequencer |= (v.memoryProperty.get().vread(v.spriteCounter++)) << 8;
+		} else {
+			v.memoryProperty.get().vread(0x3fff);	// idle
+		}
+	}
+	void sdfetch3(Video v, int sprite) {
+		if ((v.preBA == 0) && v.sprites[sprite].enabled) {
+			v.sprites[sprite].sequencer |= v.memoryProperty.get().vread(v.spriteCounter++);
+		}
 	}
 }

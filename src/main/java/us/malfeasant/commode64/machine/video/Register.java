@@ -464,138 +464,115 @@ public enum Register {
 			v.backColor3 = data & 0xf;
 		}
 	},
-	D025 {
+	D025 {	// 53285: Sprite multicolor 0
 		@Override
 		int peek(Video v) {
-			// TODO Auto-generated method stub
-			return 0;
+			return v.spmc0 | 0xf0;
 		}
-
 		@Override
 		void poke(Video v, int data) {
-			// TODO Auto-generated method stub
-			
-		}
-	}, D026 {
-		@Override
-		int peek(Video v) {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		void poke(Video v, int data) {
-			// TODO Auto-generated method stub
-			
-		}
-	}, D027 {
-		@Override
-		int peek(Video v) {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		void poke(Video v, int data) {
-			// TODO Auto-generated method stub
-			
+			v.spmc0 = data & 0xf;
 		}
 	},
-	D028 {
+	D026 {	// 53286: Sprite multicolor 1
 		@Override
 		int peek(Video v) {
-			// TODO Auto-generated method stub
-			return 0;
+			return v.spmc1 | 0xf0;
 		}
 
 		@Override
 		void poke(Video v, int data) {
-			// TODO Auto-generated method stub
-			
+			v.spmc1 = data & 0xf;
 		}
-	}, D029 {
+	},
+	D027 {	// 53287: Sprite 0 color
 		@Override
 		int peek(Video v) {
-			// TODO Auto-generated method stub
-			return 0;
+			return v.sprites[0].color | 0xf0;
 		}
-
 		@Override
 		void poke(Video v, int data) {
-			// TODO Auto-generated method stub
-			
+			v.sprites[0].color = data & 0xf;
 		}
-	}, D02A {
+	},
+	D028 {	// 53288: Sprite 1 color
 		@Override
 		int peek(Video v) {
-			// TODO Auto-generated method stub
-			return 0;
+			return v.sprites[1].color | 0xf0;
 		}
-
 		@Override
 		void poke(Video v, int data) {
-			// TODO Auto-generated method stub
-			
+			v.sprites[1].color = data & 0xf;
 		}
-	}, D02B {
+	},
+	D029 {	// 53287: Sprite 2 color
 		@Override
 		int peek(Video v) {
-			// TODO Auto-generated method stub
-			return 0;
+			return v.sprites[2].color | 0xf0;
 		}
-
 		@Override
 		void poke(Video v, int data) {
-			// TODO Auto-generated method stub
-			
+			v.sprites[2].color = data & 0xf;
 		}
-	}, D02C {
+	},
+	D02A {	// 53287: Sprite 3 color
 		@Override
 		int peek(Video v) {
-			// TODO Auto-generated method stub
-			return 0;
+			return v.sprites[3].color | 0xf0;
 		}
-
 		@Override
 		void poke(Video v, int data) {
-			// TODO Auto-generated method stub
-			
+			v.sprites[3].color = data & 0xf;
 		}
-	}, D02D {
+	},
+	D02B {	// 53287: Sprite 4 color
 		@Override
 		int peek(Video v) {
-			// TODO Auto-generated method stub
-			return 0;
+			return v.sprites[4].color | 0xf0;
 		}
-
 		@Override
 		void poke(Video v, int data) {
-			// TODO Auto-generated method stub
-			
+			v.sprites[4].color = data & 0xf;
 		}
-	}, D02E {
+	},
+	D02C {	// 53287: Sprite 5 color
 		@Override
 		int peek(Video v) {
-			// TODO Auto-generated method stub
-			return 0;
+			return v.sprites[5].color | 0xf0;
 		}
-
 		@Override
 		void poke(Video v, int data) {
-			// TODO Auto-generated method stub
-			
+			v.sprites[5].color = data & 0xf;
 		}
-	}, D02F {
+	},
+	D02D {	// 53287: Sprite 6 color
 		@Override
 		int peek(Video v) {
-			// TODO Auto-generated method stub
-			return 0;
+			return v.sprites[6].color | 0xf0;
 		}
-
 		@Override
 		void poke(Video v, int data) {
-			// TODO Auto-generated method stub
-			
+			v.sprites[6].color = data & 0xf;
+		}
+	},
+	D02E {	// 53287: Sprite 7 color
+		@Override
+		int peek(Video v) {
+			return v.sprites[7].color | 0xf0;
+		}
+		@Override
+		void poke(Video v, int data) {
+			v.sprites[7].color = data & 0xf;
+		}
+	},
+	D02F {
+		@Override
+		int peek(Video v) {
+			return 0xff;	// unconnected
+		}
+		@Override
+		void poke(Video v, int data) {
+			// Nothing- unconnected
 		}
 	},
 	;

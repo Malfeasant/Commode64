@@ -243,76 +243,69 @@ public enum CycleType {
 	R0 {
 		@Override
 		void clockLo(Video v) {
-			// TODO refresh cycle, inc counter
+			refresh(v);
 		}
-
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// Nothing
 		}
 	},
 	R1 {
 		@Override
 		void clockLo(Video v) {
-			// TODO refresh cycle, inc counter
+			refresh(v);
 			// check if badline coming- if so, negate BA
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// Nothing
 		}
 	},
 	R2 {
 		@Override
 		void clockLo(Video v) {
-			// TODO refresh cycle, inc counter
+			refresh(v);
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// Nothing
 		}
 	},
 	R3 {
 		@Override
 		void clockLo(Video v) {
-			// TODO refresh cycle, inc counter
+			refresh(v);
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// Nothing
 		}
 	},
 	R4 {
 		@Override
 		void clockLo(Video v) {
-			// TODO refresh cycle, inc counter
-			// if badline, steal cycle for c fetch
+			refresh(v);
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 0);
 		}
 	},
 	G00 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 1);
 		}
 	},
 	G01 {
@@ -894,23 +887,31 @@ public enum CycleType {
 		return values()[ord];
 	}
 	void spfetch(Video v, int sprite) {
-		v.spriteCounter = (v.memoryProperty.get().vread(v.vmbase + 0x3f8 + sprite)) << 6;
+		v.spriteCounter = (v.memoryProperty.get().vread((short) (v.vmbase + 0x3f8 + sprite))) << 6;
 	}
 	void sdfetch1(Video v, int sprite) {
 		if ((v.preBA == 0) && v.sprites[sprite].enabled) {
-			v.sprites[sprite].sequencer = (v.memoryProperty.get().vread(v.spriteCounter++)) << 16;
+			v.sprites[sprite].sequencer = (v.memoryProperty.get().vread((short) v.spriteCounter++)) << 16;
 		}
 	}
 	void sdfetch2(Video v, int sprite) {
 		if (v.sprites[sprite].enabled) {
-			v.sprites[sprite].sequencer |= (v.memoryProperty.get().vread(v.spriteCounter++)) << 8;
+			v.sprites[sprite].sequencer |= (v.memoryProperty.get().vread((short) v.spriteCounter++)) << 8;
 		} else {
-			v.memoryProperty.get().vread(0x3fff);	// idle
+			v.memoryProperty.get().vread((short) 0x3fff);	// idle
 		}
 	}
 	void sdfetch3(Video v, int sprite) {
 		if ((v.preBA == 0) && v.sprites[sprite].enabled) {
-			v.sprites[sprite].sequencer |= v.memoryProperty.get().vread(v.spriteCounter++);
+			v.sprites[sprite].sequencer |= v.memoryProperty.get().vread((short) v.spriteCounter++);
+		}
+	}
+	void refresh(Video v) {
+		v.memoryProperty.get().vread((short) (0x3f00 | v.refreshCounter--));	// discard the result
+	}
+	void cFetch(Video v, int index) {	// performs a character fetch, stores in buffer
+		if (v.preBA == 0 && v.bad) {
+			v.lineBuffer[index] = v.memoryProperty.get().vread((short) v.vmbase);	// TODO more to address calculation
 		}
 	}
 }

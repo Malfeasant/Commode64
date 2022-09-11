@@ -84,8 +84,8 @@ public class Memory {
 		return contents;
 	}
 	
-	private int getHigh(int addr) {	// helper function to read top 4 bits of address
-		return (addr >> 12) & 0xf;	// need the and, otherwise we end up with negatives...
+	private byte getHigh(short addr) {	// helper function to read top 4 bits of address
+		return (byte) ((addr >> 12) & 0xf);
 	}
 	/**
 	 * Models a write from CPU- almost always goes to RAM, but may need to be intercepted to go to i/o-
@@ -113,8 +113,8 @@ public class Memory {
 	 * @param addr - Address to read from
 	 * @return - Data read from appropriate source
 	 */
-	public int peek(int addr) {
-		assert (addr == (addr & 0xffff)) : "Problem: address " + addr + " out of range.";
+	public byte peek(short addr) {
+		//assert (addr == (addr & 0xffff)) : "Problem: address " + addr + " out of range."; don't need this for short addr
 		ByteBuffer buf = null;	// give me exception if I have missed anything
 		if (ultimax.get()) {	// lots of stuff is handled differently, so special case
 			switch (getHigh(addr)) {
@@ -184,8 +184,8 @@ public class Memory {
 	 * @param addr - 14-bit address to read from- top 2 bits come from CIA #? TODO which?  and how?
 	 * @return - 12-bits of data- top 4 bits come from color ram
 	 */
-	public int vread(int addr) {
-		assert (addr == (addr & 0x3fff)) : "Video read: Address " + addr + " out of range.";
+	public short vread(short addr) {
+		//assert (addr == (addr & 0x3fff)) : "Video read: Address " + addr + " out of range.";
 		var buf = ram;
 		if (va14.get()) addr |= 0x4000;
 		if (va15.get()) addr |= 0x8000;
@@ -195,6 +195,6 @@ public class Memory {
 			buf = charom;
 			addr &= 0xfff;
 		}
-		return (coloram.get(addr & 0x3ff) << 8) | buf.get(addr);
+		return (short) ((coloram.get(addr & 0x3ff) << 8) | buf.get(addr & 0xffff));	// need this and to avoid negative
 	}
 }

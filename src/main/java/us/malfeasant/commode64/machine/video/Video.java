@@ -25,11 +25,11 @@ public class Video {
 	
 	private int rasterX;	// the x coordinate- this does not get reset at the same time as rasterByte.
 	private int rasterY;	// the actual y coordinate within the generated image
-	private int refreshCounter;	// not sure if there is anything to be gained by simulating this, but it shouldn't hurt much...
+	int refreshCounter;	// not sure if there is anything to be gained by simulating this, but it shouldn't hurt much...
 	private boolean activeX;	// if generated pixels are valid in the x dimension
 	private boolean activeY;	// if generated pixels are valid in the y dimension
 	
-	private final short[] lineBuffer = new short[40];	// stores result of c-access for 8 lines- includes color nybble too
+	final short[] lineBuffer = new short[40];	// stores result of c-access for 8 lines- includes color nybble too
 	
 	private long outBuffer;	// stores character pixels- each new pixel added shifts to left
 	// where these are read from depends on smooth scrolling register
@@ -39,7 +39,7 @@ public class Video {
 	
 	CycleType currentCycle;
 	int vmbase = 0;	// 4 bits from d018, determines where video matrix (and sprite pointers) come from
-	int chbase = 0;	// 3 bits from d018, determines where character fetches come from
+	int chbase = 0;	// 3 bits from d018, determines where character pattern/bitmap fetches come from
 	
 	int address;	// temporarily holds address before placing on bus
 	

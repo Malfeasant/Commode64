@@ -58,6 +58,12 @@ public class Video {
 	boolean bmm = false;	// bitmap mode
 	boolean mcm = false;	// multicolor mode
 	
+	int borderColor;	// d020
+	int backColor0;	// d021 normal text mode background color
+	int backColor1;	// d022 bg color 1, used in mcm and ecm
+	int backColor2;	// d023 bg color 2, used in mcm and ecm
+	int backColor3;	// d024 bg color 3, used in ecm
+	
 	int spriteCounter = 0;	// where to fetch sprite data from (loaded with p cycle, used for each s cycle
 	final Sprite[] sprites;
 	

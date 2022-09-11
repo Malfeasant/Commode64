@@ -19,7 +19,7 @@ class Sprite {
 	int x;	// d000/2/4 etc + d010
 	int y;	// d001/3/5 etc
 	
-	int mcbase;	
-	int mc;
+	int mcbase;	// sprite data starting address counter- counts with each (non-repeated) line
+	int mc;	// address counter working copy- counts with each byte fetch of sprite
 	int sequencer;	// shift register, holds the bit pattern of the sprite packed into 24 bits
 }

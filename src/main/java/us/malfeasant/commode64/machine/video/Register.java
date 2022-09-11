@@ -414,67 +414,57 @@ public enum Register {
 			// Nothing- writes have no effect
 		}
 	},
-	D020 {
+	D020 {	// 53280: Border color
 		@Override
 		int peek(Video v) {
-			// TODO Auto-generated method stub
-			return 0;
+			return 0xf0 | v.borderColor;
 		}
-
 		@Override
 		void poke(Video v, int data) {
-			// TODO Auto-generated method stub
-			
+			v.borderColor = data & 0xf;
 		}
-	}, D021 {
+	},
+	D021 {	// 53281: Background color #0
 		@Override
 		int peek(Video v) {
-			// TODO Auto-generated method stub
-			return 0;
+			return 0xf0 | v.backColor0;
 		}
-
 		@Override
 		void poke(Video v, int data) {
-			// TODO Auto-generated method stub
-			
+			v.backColor0 = data & 0xf;
 		}
-	}, D022 {
+	},
+	D022 {	// 53282: Background color #1
 		@Override
 		int peek(Video v) {
-			// TODO Auto-generated method stub
-			return 0;
+			return 0xf0 | v.backColor1;
 		}
-
 		@Override
 		void poke(Video v, int data) {
-			// TODO Auto-generated method stub
-			
+			v.backColor1 = data & 0xf;
 		}
-	}, D023 {
+	},
+	D023 {	// 53283: Background color #2
 		@Override
 		int peek(Video v) {
-			// TODO Auto-generated method stub
-			return 0;
+			return 0xf0 | v.backColor2;
 		}
-
 		@Override
 		void poke(Video v, int data) {
-			// TODO Auto-generated method stub
-			
+			v.backColor2 = data & 0xf;
 		}
-	}, D024 {
+	},
+	D024 {	// 53284: Background color #3
 		@Override
 		int peek(Video v) {
-			// TODO Auto-generated method stub
-			return 0;
+			return 0xf0 | v.backColor3;
 		}
-
 		@Override
 		void poke(Video v, int data) {
-			// TODO Auto-generated method stub
-			
+			v.backColor3 = data & 0xf;
 		}
-	}, D025 {
+	},
+	D025 {
 		@Override
 		int peek(Video v) {
 			// TODO Auto-generated method stub

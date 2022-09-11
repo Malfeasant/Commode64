@@ -23,8 +23,6 @@ public class Video {
 	public final ObjectProperty<Memory> memoryProperty;	// points to memory handler
 	public final ObjectProperty<Variant> variantProperty;	// chip revision bits
 	
-	private int rasterByte;	// cycle within a line- all memory accesses are determined by this
-	private int rasterLine;	// the internal line count, separate from the y coordinate of the generated image
 	private int rasterX;	// the x coordinate- this does not get reset at the same time as rasterByte.
 	private int rasterY;	// the actual y coordinate within the generated image
 	private int refreshCounter;	// not sure if there is anything to be gained by simulating this, but it shouldn't hurt much...
@@ -36,6 +34,9 @@ public class Video {
 	private long outBuffer;	// stores character pixels- each new pixel added shifts to left
 	// where these are read from depends on smooth scrolling register
 	
+	int rasterCompare;	// 9-bits used to set an interrupt to occur on a given line
+	int rasterCurrent;	// 9-bits, the current raster line being scanned
+	
 	CycleType currentCycle;
 	int vmbase = 0;	// 4 bits from d018, determines where video matrix (and sprite pointers) come from
 	int chbase = 0;	// 3 bits from d018, determines where character fetches come from
@@ -45,7 +46,14 @@ public class Video {
 	boolean bad;	// ongoing bad line condition- will be stealing cycles for c fetches
 	boolean aec;	// if true, cpu can run bus cycle.  if false, vic will be stealing a cycle.
 	int preBA = 4;	// counts cycles between asserting ba and aec- if ba=0, ok to steal a cycle
+
+	boolean csel = false;	// border adjust for fine scrolling- true = 40 columns, false = 38 columns
+	int xscroll = 0;	// 3 bits, adjusts x position of video matrix for fine scrolling
+	boolean rsel = false;	// border adjust for fine scrolling- true = 25 rows, false = 24 rows
+	int yscroll = 0;	// 3 bits, adjusts y position of video matrix for fine scrolling
 	
+	boolean res = false;	// reset bit- older chips used this to disable the chip, but newer ones ignore it.
+	boolean den = false;	// display enable - false stops bad lines & border decodes
 	boolean ecm = false;	// extended color mode
 	boolean bmm = false;	// bitmap mode
 	boolean mcm = false;	// multicolor mode
@@ -86,38 +94,15 @@ public class Video {
 		// TODO more
 	}
 	
-	public void poke(int addr, int data) {
+	private Register selectRegister(int addr) {
 		addr &= 0x3f;	// any other bits are ignored
-		switch (addr) {
-		case 0x15:	// sprite enable reg
-			for (Sprite s : sprites) {
-				s.enabled = (data & 1) != 0;	// check rightmost bit
-				data >>= 1;	// shift right to be ready for the next
-			}
-			break;
-		case 0x18:	// 53272: memory control reg
-			vmbase = (data & 0xf0 << 6);	// bits 7-4 move to bits 13-10
-			chbase = (data & 0xe << 10);	// bits 3-1 move to bits 13-11
-			break;
-		}
+		return (addr < 0x30) ? Register.values()[addr] : Register.D02F;
+	}
+	public void poke(int addr, int data) {
+		selectRegister(addr).poke(this, data);
 	}
 	
 	public int peek(int addr) {
-		int data = 0;
-		addr &= 0x3f;	// any other bits are ignored
-		switch (addr) {
-		case 0x15:	// sprite enable reg
-			for (Sprite s : sprites) {
-				data <<= 1;	// shift left (if first, will be 0 anyway)
-				if (s.enabled) data |= 1;
-			}
-			break;
-		case 0x18:	// 53272: memory control reg
-			data |= (vmbase >> 6);
-			data |= (chbase >> 10);
-			break;
-		}
-		
-		return data;
+		return selectRegister(addr).peek(this);
 	}
 }

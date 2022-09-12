@@ -286,6 +286,7 @@ public enum Register {
 		void poke(Video v, int data) {
 			for (Sprite s : v.sprites) {
 				s.expandY = (data & 1) != 0;	// check rightmost bit
+				if (!s.expandY) s.notAgain = true;	// when normal size, inc every line
 				data >>= 1;	// shift right to be ready for the next
 			}
 		}

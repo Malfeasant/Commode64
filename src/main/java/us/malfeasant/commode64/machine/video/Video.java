@@ -67,7 +67,6 @@ public class Video {
 	int spmc0;	// Sprite multicolor 0 (shared by all sprites)
 	int spmc1;	// Sprite multicolor 1 (shared by all sprites)
 	
-	int spriteCounter = 0;	// where to fetch sprite data from (loaded with p cycle, used for each s cycle
 	final Sprite[] sprites;
 	
 	public Video() {

@@ -20,9 +20,15 @@ package us.malfeasant.commode64.machine.video;
  * @author Malfeasant
  */
 public enum CycleType {
-	S0P {
+	S0P {	// this cycle is special- all sprites' mcount are reset from mcbase, also checked for display conditions
 		@Override
 		void clockLo(Video v) {
+			for (Sprite s : v.sprites) {
+				s.mcount = s.mcbase;
+				if (s.dma && s.y == (v.rasterCurrent & 0xff)) {
+					s.display = true;
+				}
+			}
 			// fetch sprite pointer
 			spfetch(v, 0);
 		}
@@ -288,6 +294,12 @@ public enum CycleType {
 		@Override
 		void clockLo(Video v) {
 			refresh(v);
+			// increment sprite counters
+			for (Sprite s : v.sprites) {
+				if (s.notAgain) {
+					s.mcbase += 2;
+				}
+			}
 		}
 
 		@Override
@@ -300,6 +312,16 @@ public enum CycleType {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
+			// increment sprite counters continued
+			for (Sprite s : v.sprites) {
+				if (s.notAgain) {
+					s.mcbase++;
+					if (s.mcbase == 63) {	// reached the end of sprite data
+						s.dma = false;
+						s.display = false;
+					}
+				}
+			}		
 		}
 
 		@Override
@@ -807,6 +829,10 @@ public enum CycleType {
 		void clockLo(Video v) {
 			// TODO g fetch
 			// if 6569 & Sprite 0 enabled, negate BA
+			
+			if (v.variantProperty.get() == Variant.PAL_NEW || v.variantProperty.get() == Variant.PAL_OLD) {
+				cycle55(v);
+			}
 		}
 
 		@Override
@@ -820,6 +846,12 @@ public enum CycleType {
 		void clockLo(Video v) {
 			// TODO Idle fetch
 			// if 6567R56A & Sprite 0 enabled, negate BA
+			
+			if (v.variantProperty.get() == Variant.NTSC_OLD) {
+				cycle55(v);
+			} else if (v.variantProperty.get() == Variant.PAL_NEW || v.variantProperty.get() == Variant.PAL_OLD) {
+				cycle56(v);
+			}
 		}
 
 		@Override
@@ -834,6 +866,12 @@ public enum CycleType {
 			// TODO Idle fetch
 			// if 6567R8 & Sprite 0 enabled, negate BA
 			// if 6569 & Sprite 1 enabled, negate BA
+			
+			if (v.variantProperty.get() == Variant.NTSC_NEW) {
+				cycle55(v);
+			} else if (v.variantProperty.get() == Variant.NTSC_OLD) {
+				cycle56(v);
+			}
 		}
 
 		@Override
@@ -847,6 +885,10 @@ public enum CycleType {
 		void clockLo(Video v) {
 			// TODO Idle fetch
 			// if 6567R56A & Sprite 1 enabled, negate BA
+			
+			if (v.variantProperty.get() == Variant.NTSC_NEW) {
+				cycle56(v);
+			}
 		}
 
 		@Override
@@ -886,32 +928,56 @@ public enum CycleType {
 		}
 		return values()[ord];
 	}
-	void spfetch(Video v, int sprite) {
-		v.spriteCounter = (v.memoryProperty.get().vread((short) (v.vmbase + 0x3f8 + sprite))) << 6;
+	private static void spfetch(Video v, int sprite) {
+		v.sprites[sprite].pointer = (v.memoryProperty.get().vread((short) (v.vmbase | 0x3f8 | sprite))) << 6;
 	}
-	void sdfetch1(Video v, int sprite) {
-		if ((v.preBA == 0) && v.sprites[sprite].enabled) {
-			v.sprites[sprite].sequencer = (v.memoryProperty.get().vread((short) v.spriteCounter++)) << 16;
+	private static void sdfetch1(Video v, int sprite) {
+		var s = v.sprites[sprite];
+		if (s.dma) {
+			// if ba was not negated in time, fetch does not get to set address, but still reads data... TODO?
+			s.sequencer = v.preBA == 0 ?
+					(v.memoryProperty.get().vread((short) (s.pointer | s.mcount))) : 0xff << 16;
+			s.mcount++;	// increments whether the fetch happens or not
 		}
 	}
-	void sdfetch2(Video v, int sprite) {
-		if (v.sprites[sprite].enabled) {
-			v.sprites[sprite].sequencer |= (v.memoryProperty.get().vread((short) v.spriteCounter++)) << 8;
+	private static void sdfetch2(Video v, int sprite) {
+		var s = v.sprites[sprite];
+		if (s.dma) {
+			s.sequencer |= (v.memoryProperty.get().vread((short) (s.pointer | s.mcount++))) << 8;
 		} else {
 			v.memoryProperty.get().vread((short) 0x3fff);	// idle
 		}
 	}
-	void sdfetch3(Video v, int sprite) {
-		if ((v.preBA == 0) && v.sprites[sprite].enabled) {
-			v.sprites[sprite].sequencer |= v.memoryProperty.get().vread((short) v.spriteCounter++);
+	private static void sdfetch3(Video v, int sprite) {
+		var s = v.sprites[sprite];
+		if (s.dma) {
+			// if ba was not negated in time, fetch does not get to set address, but still reads data... TODO?
+			s.sequencer = v.preBA == 0 ?
+					(v.memoryProperty.get().vread((short) (s.pointer | s.mcount))) : 0xff;
+			s.mcount++;	// increments whether the fetch happens or not
 		}
 	}
-	void refresh(Video v) {
+	private static void refresh(Video v) {
 		v.memoryProperty.get().vread((short) (0x3f00 | v.refreshCounter--));	// discard the result
 	}
-	void cFetch(Video v, int index) {	// performs a character fetch, stores in buffer
+	private static void cFetch(Video v, int index) {	// performs a character fetch, stores in buffer
 		if (v.preBA == 0 && v.bad) {
 			v.lineBuffer[index] = v.memoryProperty.get().vread((short) v.vmbase);	// TODO more to address calculation
+		}
+	}
+	private static void cycle55(Video v) {	// "cycle 55" according to vic656x.txt- does a bunch of sprite preparations
+		for (Sprite s : v.sprites) {
+			if (s.expandY) s.notAgain = !s.notAgain;
+			s.firstLine = s.enabled && s.y == v.rasterCurrent;
+		}
+	}
+	private static void cycle56(Video v) {	// continuation of above
+		for (Sprite s : v.sprites) {
+			if (s.firstLine && !s.dma) {
+				s.dma = true;
+				s.mcbase = 0;
+				if (s.expandY) s.notAgain = false;
+			}
 		}
 	}
 }

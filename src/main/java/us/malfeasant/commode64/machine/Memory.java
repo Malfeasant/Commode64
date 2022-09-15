@@ -26,6 +26,10 @@ public class Memory {
 	public final ObjectProperty<ByteBuffer> cartLo;	// may or may not be present... 
 	public final ObjectProperty<ByteBuffer> cartHi;
 	
+	public final BooleanProperty aec;	// Allows CPU to drive the bus- when false, Vic drives it.
+	public final BooleanProperty ba;	// Allows CPU to run- when pulled low, cpu pauses (can finish a write)
+	public final BooleanProperty irq;	// Interrupt request- aggregate from all sources
+	
 	public final BooleanProperty va14;	// controlled by CIA, selects VIC's bank
 	public final BooleanProperty va15;
 	
@@ -39,6 +43,9 @@ public class Memory {
 	public final BooleanProperty hiram;	// controlled by cpu- false=kernal rom at e000-ffff, else ram
 	public final BooleanProperty charen;	// controlled by cpu- false=i/o at d000-dfff, else char rom, unless...
 	
+	private byte portBits;	// cpu i/o port bits (stored here because otherwise could be lost if direction set to input)
+	private byte portDirection;	// direction for above- true = output
+	
 	public Memory() {
 		ram = ByteBuffer.allocate(0x10000);
 		coloram = ByteBuffer.allocate(0x400);
@@ -50,8 +57,12 @@ public class Memory {
 		cartLo = new SimpleObjectProperty<>();
 		cartHi = new SimpleObjectProperty<>();
 		
-		va14 = new SimpleBooleanProperty(false);	// TODO what is true init value?
-		va15 = new SimpleBooleanProperty(false);	// TODO what is true init value?
+		aec = new SimpleBooleanProperty(false);
+		ba = new SimpleBooleanProperty(false);
+		irq = new SimpleBooleanProperty(false);
+		
+		va14 = new SimpleBooleanProperty(false);	// driven by CIA, bit 14 of VIC memory address
+		va15 = new SimpleBooleanProperty(false);	// driven by CIA, bit 15 of VIC memory address
 		
 		exrom = new SimpleBooleanProperty(false);
 		game = new SimpleBooleanProperty(false);
@@ -87,6 +98,15 @@ public class Memory {
 	private byte getHigh(short addr) {	// helper function to read top 4 bits of address
 		return (byte) ((addr >> 12) & 0xf);
 	}
+	
+	private void updateFlags() {	// called whenever i/o port or direction changes
+		loram.set((portBits & portDirection & 1) != 0);
+		hiram.set((portBits & portDirection & 2) != 0);
+		charen.set((portBits & portDirection & 4) != 0);
+		// TODO cassette data out
+		// TODO cassette switch
+		// TODO cassette motor
+	}
 	/**
 	 * Models a write from CPU- almost always goes to RAM, but may need to be intercepted to go to i/o-
 	 * unclear whether in ultimax mode writes to 1000-7fff go to ram or go nowhere- easy thing would be to handle writes
@@ -97,14 +117,24 @@ public class Memory {
 	 * @param data - Data to be written
 	 */
 	public void poke(short addr, byte data) {
-		var ha = getHigh(addr);
-		if (ha == 0xd && (ultimax.get() ||	// all ultimax variants have i/o
-				!charen.get() && (!hiram.get() || !loram.get()) )) {	// if no i/o, writes go to ram under char rom
-			// TODO i/o handling
-		} else if (ultimax.get() &&	ha > 0) {	// if not i/o, only first 4k of memory exists in ultimax mode
-			// do nothing
+		if ((addr & 1) == addr) {	// either 0 or 1
+			if (addr == 0) {
+				portDirection = data;
+				updateFlags();
+			} else {
+				portBits = data;
+				updateFlags();
+			}
 		} else {
-			ram.put(addr & 0xffff, data);	// need this and otherwise index could be negative...
+			var ha = getHigh(addr);
+			if (ha == 0xd && (ultimax.get() ||	// all ultimax variants have i/o
+					!charen.get() && (!hiram.get() || !loram.get()) )) {	// if no i/o, writes go to ram under char rom
+				// TODO i/o handling
+			} else if (ultimax.get() &&	ha > 0) {	// if not i/o, only first 4k of memory exists in ultimax mode
+				// do nothing
+			} else {
+				ram.put(addr & 0xffff, data);	// need this and otherwise index could be negative...
+			}
 		}
 	}
 	
@@ -114,6 +144,40 @@ public class Memory {
 	 * @return - Data read from appropriate source
 	 */
 	public byte peek(short addr) {
+		if ((addr & 1) == addr) {	// either 0 or 1
+			if (addr == 0) {
+				return portDirection;
+			} else {
+				byte data = 0;
+				if ((portDirection & 1) == 0) {	// input bit
+					if (loram.get()) data |= 1;
+				} else {
+					data |= (portBits & 1);
+				}
+				if ((portDirection & 2) == 0) {	// input bit
+					if (hiram.get()) data |= 2;
+				} else {
+					data |= (portBits & 2);
+				}
+				if ((portDirection & 4) == 0) {	// input bit
+					if (charen.get()) data |= 4;
+				} else {
+					data |= (portBits & 4);
+				}
+				if ((portDirection & 8) == 0) {
+					data |= 8;	// bit will read high if input
+				} else {
+					data |= (portBits & 8);	// read back what was last written
+				}
+				// TODO read cassette switch
+				if ((portDirection & 0x20) == 0) {
+					data |= 0x20;	// bit will read high if input
+				} else {
+					data |= (portBits & 0x20);	// read back what was last written
+				}
+				return data;
+			}
+		}
 		//assert (addr == (addr & 0xffff)) : "Problem: address " + addr + " out of range."; don't need this for short addr
 		ByteBuffer buf = null;	// give me exception if I have missed anything
 		if (ultimax.get()) {	// lots of stuff is handled differently, so special case

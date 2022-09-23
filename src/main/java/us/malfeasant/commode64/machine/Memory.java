@@ -285,7 +285,18 @@ public class Memory {
 */	}
 	
 	private void cpumap() {	// setup the cpu's view of memory
-		
+		if (ultimax.get()) {
+			cpureadmap[0] = ram[0];
+			cpuwritemap[0] = ram[0];
+			for (int i=1; i<0xd; i++) {	// will add in roms for readmap after
+				cpureadmap[i] = scratch;
+				cpuwritemap[i] = scratch;
+			}
+			cpureadmap[8] = cartLo.get()[0];
+			cpureadmap[9] = cartLo.get()[1];
+			cpureadmap[0xe] = cartHi.get()[0];
+			cpureadmap[0xf] = cartHi.get()[1];
+		}
 	}
 	
 	private void vicmap() {	// setup the video chip's view of memory

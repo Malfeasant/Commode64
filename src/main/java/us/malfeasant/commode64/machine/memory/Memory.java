@@ -96,7 +96,7 @@ public class Memory {
 		va15.addListener(p -> vicmapvalid = false);
 	}
 	
-	private byte getHigh(short addr) {	// helper function to read top 4 bits of address
+	private int getHigh(int addr) {	// helper function to read top 4 bits of address
 		return (byte) ((addr >> 12) & 0xf);
 	}
 	
@@ -170,7 +170,7 @@ public class Memory {
 	 * @param addr - Address to read from
 	 * @return - Data read from appropriate source
 	 */
-	public byte peek(short addr) {
+	public int peek(int addr) {
 		if ((addr & 0xfffe) == 0) {	// i/o port or direction
 			return (addr == 0) ? portDirection : readPort();
 		}

@@ -7,7 +7,7 @@ import java.io.IOException;
  * Models a 4k chunk of memory space.  Will be subclassed by RAM, ROM, I/O, others?
  * @author Malfeasant
  */
-public abstract class Chunk {
+abstract class Chunk {
 	final byte[] contents;
 	final int offset;
 	
@@ -20,21 +20,21 @@ public abstract class Chunk {
 		this.contents = contents;
 		this.offset = offset;
 	}
-	byte peek(short addr) {
+	int peek(int addr) {
 		return contents[maskBits(addr) + offset];
 	}
-	void poke(short addr, byte data) {
-		contents[maskBits(addr) + offset] = data;
+	void poke(int addr, int data) {
+		contents[maskBits(addr) + offset] = (byte) data;
 	}
-	protected short maskBits(short addr) {
-		return (short) (addr & 0xfff);	// ensures no out-of-range writes
+	protected int maskBits(int addr) {
+		return (addr & 0xfff);	// ensures no out-of-range writes
 	}
 	
 	/**
 	 * Builds the full 64k of system RAM- backed by a single array to make loading/saving contents easier.
 	 * @return An array of Chunks that model ordinary RAM
 	 */
-	public static RAM[] ram() {
+	static RAM[] ram() {
 		var ramBytes = new byte[0x10000];
 		var ramChunks = new RAM[0x10];
 		for (int i = 0; i < ramChunks.length; i++) {
@@ -42,13 +42,13 @@ public abstract class Chunk {
 		}
 		return ramChunks;
 	}
-	public static ROM[] basic() {
+	static ROM[] basic() {
 		return fromIncludedFile("basic", 2);
 	}
-	public static ROM[] kernal() {
+	static ROM[] kernal() {
 		return fromIncludedFile("kernal", 2);
 	}
-	public static ROM charrom() {
+	static ROM charrom() {
 		return fromIncludedFile("chargen", 1)[0];
 	}
 	// TODO - make the following more general purpose for loading external files (cartridges? alternate kernal/basic?)

@@ -11,12 +11,12 @@ public class IO extends Chunk {
 	/**
 	 * Only constructor- not much to do here.
 	 */
-	public IO() {
+	IO() {
 		super(null, -1);
 	}
 	
 	@Override
-	byte peek(short addr) {
+	int peek(int addr) {
 		byte data = 0;
 		switch (addr & 0xc00) {
 		case 0x000:	// VIC
@@ -48,7 +48,7 @@ public class IO extends Chunk {
 		return data;
 	}
 	@Override
-	void poke(short addr, byte data) {
+	void poke(int addr, int data) {
 		switch (addr & 0xc00) {
 		case 0x000:	// VIC
 			videoProp.get().poke(addr, data);

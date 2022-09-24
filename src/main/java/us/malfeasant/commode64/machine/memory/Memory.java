@@ -194,10 +194,14 @@ public class Memory {
 			cpuwritemap[0xd] = io;
 			cpureadmap[8] = cartLo.get()[0];
 			cpureadmap[9] = cartLo.get()[1];
+			cpuwritemap[8] = cartLo.get()[0];	// oddly, in ultimax mode, ROML is enabled for writes as well
+			cpuwritemap[9] = cartLo.get()[1];
 			cpureadmap[0xe] = cartHi.get()[0];
 			cpureadmap[0xf] = cartHi.get()[1];
+			cpuwritemap[0xe] = cartHi.get()[0];	// oddly, in ultimax mode, ROMH is enabled for writes as well
+			cpuwritemap[0xf] = cartHi.get()[1];
 		} else {
-			for (int i = 0; i < 0x10; i++) {
+			for (int i = 0; i < 0x10; i++) {	// start with all ram,
 				cpuwritemap[i] = ram[i];
 				cpureadmap[i] = ram[i];	// will overwrite roms & i/o after
 			}
@@ -209,12 +213,29 @@ public class Memory {
 				cpureadmap[0xe] = kernal[0];
 				cpureadmap[0xf] = kernal[1];
 			}
-			if (charen.get() && (	// char rom
-					(!hiram.get() && !game.get()) || 
-					(!loram.get() && !game.get()) || 
-					(!hiram.get() && exrom.get() && game.get()))) {
-				cpureadmap[0xd] = charom;
-			}	// TODO still need i/o, roml, romh...
+			if (charen.get()) {	// char rom, maybe...
+				if ((!hiram.get() && !game.get()) ||
+						(!loram.get() && !game.get()) ||
+						(!hiram.get() && exrom.get() && game.get())) {
+					cpureadmap[0xd] = charom;
+				}
+			} else {	// I/O, maybe...
+				if ((!hiram.get() && !game.get()) ||
+						(!loram.get() && !game.get()) ||
+						(!hiram.get() && exrom.get() && game.get()) ||
+						(!loram.get() && exrom.get() && game.get())) {
+					cpureadmap[0xd] = io;
+					cpuwritemap[0xd] = io;
+				}
+			}
+			if (!loram.get() && !hiram.get() && exrom.get()) {	// ROML
+				cpureadmap[8] = cartLo.get()[0];
+				cpureadmap[9] = cartLo.get()[1];
+			}
+			if (!hiram.get() && exrom.get() && game.get()) {	// ROMH
+				cpureadmap[0xa] = cartHi.get()[0];
+				cpureadmap[0xb] = cartHi.get()[1];
+			}
 		}
 		cpumapvalid = true;
 	}

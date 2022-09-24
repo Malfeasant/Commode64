@@ -6,6 +6,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.WritableImage;
+import us.malfeasant.commode64.machine.memory.Memory;
 import us.malfeasant.commode64.machine.video.Variant;
 import us.malfeasant.commode64.machine.video.Video;
 import us.malfeasant.commode64.timing.CrystalListener;

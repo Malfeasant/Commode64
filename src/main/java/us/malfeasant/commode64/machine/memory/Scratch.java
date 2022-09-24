@@ -5,8 +5,8 @@ package us.malfeasant.commode64.machine.memory;
  * @author Malfeasant
  */
 public class Scratch extends Chunk {
-	Scratch() {
-		super(null, 0);	// no backing array
+	public Scratch() {
+		super(null, -1);	// no backing array
 	}
 	
 	@Override

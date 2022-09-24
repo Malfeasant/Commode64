@@ -9,11 +9,10 @@ public class IO extends Chunk {
 	// TODO properties for SID, CIAs, I/O expansions, anything else?
 	
 	/**
-	 * Only constructor- so far just initializes the array
-	 * @param coloram - an existing 1k array also held by Video
+	 * Only constructor- not much to do here.
 	 */
-	public IO(byte[] coloram) {
-		super(coloram, 0);
+	public IO() {
+		super(null, -1);
 	}
 	
 	@Override
@@ -27,10 +26,23 @@ public class IO extends Chunk {
 			// TODO
 			break;
 		case 0x800:	// coloram
-			data = contents[addr & 0x3ff];	// could also make this reach into Video object to read its color ram...
+			data = (byte) videoProp.get().peek(addr & 0x3ff);
 			break;
 		case 0xc00:	// CIAs, special I/O blocks
-			// TODO
+			switch (addr & 0xf00) {
+			case 0xc00:	// CIA1
+				// TODO
+				break;
+			case 0xd00:	// CIA2
+				// TODO
+				break;
+			case 0xe00:	// I/O Expansion 1
+				// TODO
+				break;
+			case 0xf00:	// I/O Expansion 2
+				// TODO
+				break;
+			}
 			break;
 		}
 		return data;
@@ -45,7 +57,7 @@ public class IO extends Chunk {
 			// TODO
 			break;
 		case 0x800:	// coloram
-			contents[addr & 0x3ff] = data;
+			videoProp.get().poke(addr & 0x3ff, data & 0xf);
 			break;
 		case 0xc00:	// CIAs, special I/O blocks
 			switch (addr & 0xf00) {

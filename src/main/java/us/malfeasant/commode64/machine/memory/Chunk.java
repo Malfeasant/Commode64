@@ -30,6 +30,18 @@ public abstract class Chunk {
 		return (short) (addr & 0xfff);	// ensures no out-of-range writes
 	}
 	
+	/**
+	 * Builds the full 64k of system RAM- backed by a single array to make loading/saving contents easier.
+	 * @return An array of Chunks that model ordinary RAM
+	 */
+	public static RAM[] ram() {
+		var ramBytes = new byte[0x10000];
+		var ramChunks = new RAM[0x10];
+		for (int i = 0; i < ramChunks.length; i++) {
+			ramChunks[i] = new RAM(ramBytes, i << 12);
+		}
+		return ramChunks;
+	}
 	public static ROM[] basic() {
 		return fromIncludedFile("basic", 2);
 	}

@@ -1,8 +1,4 @@
-package us.malfeasant.commode64.machine;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Arrays;
+package us.malfeasant.commode64.machine.memory;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -16,19 +12,19 @@ import javafx.beans.property.SimpleObjectProperty;
  * @author Malfeasant
  */
 public class Memory {
-	private final byte[][] ram;	// ram is an array of arrays
-	private final byte[] charom;
-	private final byte[][] basic;
-	private final byte[][] kernal;
-	private final byte[] coloram;	// actually only uses 4 bits per cell, but there is no nybble type...
-	private final byte[] scratch = new byte[0x1000];	// used by ultimax mode to swallow writes to invalid addresses
+	private final Chunk[] ram;	// ram is an array of arrays
+	private final Chunk charom;
+	private final Chunk[] basic;
+	private final Chunk[] kernal;
+	private final IO io;	// this one is special
+	private final Chunk scratch;	// used by ultimax mode for invalid addresses- reads garbage, writes are ignored
 	
-	private final byte[][] cpureadmap;	// the view of ram from the cpu (64k) for reads (ram, rom, i/o)
-	private final byte[][] cpuwritemap;	// the view of ram from the cpu (64k) for writes (mostly ram)
-	private final byte[][] vicreadmap;	// the view of ram from the vic (16k)
+	private final Chunk[] cpureadmap;	// the view of ram from the cpu (64k) for reads (ram, rom, i/o)
+	private final Chunk[] cpuwritemap;	// the view of ram from the cpu (64k) for writes (mostly ram)
+	private final Chunk[] vicreadmap;	// the view of ram from the vic (16k)
 	
-	public final ObjectProperty<byte[][]> cartLo;	// may or may not be present... 
-	public final ObjectProperty<byte[][]> cartHi;
+	public final ObjectProperty<Chunk[]> cartLo;	// may or may not be present... 
+	public final ObjectProperty<Chunk[]> cartHi;
 	
 	public final BooleanProperty aec;	// Allows CPU to drive the bus- when false, Vic drives it.
 	public final BooleanProperty ba;	// Allows CPU to run- when pulled low, cpu pauses (can finish a write)
@@ -54,12 +50,12 @@ public class Memory {
 	boolean vicmapvalid = false;	// same as above but for vic
 	
 	public Memory() {
-		ram = new byte[0x10][0x1000];
-		coloram = new byte[0x400];
-		
-		charom = readFile("chargen", 1)[0];	// only need a single chunk
-		basic = readFile("basic", 2);
-		kernal = readFile("kernal", 2);
+		ram = Chunk.ram();
+		io = new IO();
+		scratch = new Scratch();
+		charom = Chunk.charrom();
+		basic = Chunk.basic();
+		kernal = Chunk.kernal();
 		
 		cartLo = new SimpleObjectProperty<>();
 		cartHi = new SimpleObjectProperty<>();
@@ -80,15 +76,17 @@ public class Memory {
 		hiram = new SimpleBooleanProperty(false);
 		charen = new SimpleBooleanProperty(false);
 		
-		cpureadmap = new byte[0x10][];
-		cpuwritemap = new byte[0x10][];
-		vicreadmap = new byte[4][];
+		cpureadmap = new Chunk[0x10];
+		cpuwritemap = new Chunk[0x10];
+		vicreadmap = new Chunk[4];
 		
 		// Many signals to watch, but they don't change super often, so will just use invalidation listeners-
 		// Anything touches them, they're invalidated, then all will be recomputed on the next memory access.
 		loram.addListener(p -> cpumapvalid = false);
 		hiram.addListener(p -> cpumapvalid = false);
 		charen.addListener(p -> cpumapvalid = false);
+		game.addListener(p -> cpumapvalid = false);
+		exrom.addListener(p -> cpumapvalid = false);
 		ultimax.addListener(p -> {	// if ultimax mode switches, that affects both cpu and vic view of ram
 			cpumapvalid = false;
 			vicmapvalid = false;
@@ -96,35 +94,6 @@ public class Memory {
 		
 		va14.addListener(p -> vicmapvalid = false);
 		va15.addListener(p -> vicmapvalid = false);
-	}
-	
-	private byte[][] readFile(String name, int expectedChunks) {
-		byte[] contents;
-		try (var file = ClassLoader.getSystemClassLoader().getResourceAsStream(name)) {
-			if (file.available() == expectedChunks * 0x1000) {
-				contents = file.readAllBytes();
-			} else {
-				// Shouldn't happen...
-				throw new Error("File " + name + " is unexpected length.  Aborting.");
-			}
-		} catch (FileNotFoundException e) {
-			// Since it's included in the jar, this should never happen...
-			System.err.println("File " + name + " not found.  Aborting.");
-			throw new Error(e);	// bail gracelessly
-		} catch (IOException e) {
-			// could happen... will have to see it happen to decide what to do
-			System.err.println("Problem reading file: " + name + ".  Aborting.");
-			throw new Error(e);	// TODO recovery?
-		}
-		var chunks = new byte[expectedChunks][0x1000];
-		if (expectedChunks == 1) {
-			chunks[0] = contents;
-		} else {
-			for (int c = 0; c < expectedChunks; c++) {
-				chunks[c] = Arrays.copyOfRange(contents, c * 0x1000, (c + 1) * 0x1000);
-			}
-		}
-		return chunks;
 	}
 	
 	private byte getHigh(short addr) {	// helper function to read top 4 bits of address
@@ -157,15 +126,11 @@ public class Memory {
 			updateFlags();
 		} else {
 			if (!cpumapvalid) {
-				// TODO setup memory map
+				cpumap();
 			}
 			var ha = getHigh(addr);
-			if (ha == 0xd && (ultimax.get() ||	// all ultimax variants have i/o
-					!charen.get() && (!hiram.get() || !loram.get()) )) {	// if no i/o, writes go to ram under char rom
-				// TODO i/o handling
-			} else {
-				cpuwritemap[ha][addr & 0xfff] = data;
-			}
+			addr &= 0xfff;	// mask out low bits
+			cpuwritemap[ha].poke(addr, data);
 		}
 	}
 	
@@ -210,93 +175,48 @@ public class Memory {
 			return (addr == 0) ? portDirection : readPort();
 		}
 		if (!cpumapvalid) {
-			// TODO setup memory map
+			cpumap();
 		}
 		var ha = getHigh(addr);
-		if (ha == 0xd && (ultimax.get() ||	// ultimax always has i/o
-				!charen.get() ||	// as long as char rom isn't enabled, we see i/o
-				(loram.get() && hiram.get() && (!game.get() || exrom.get())))) {	// except for these special cases
-			// TODO special i/o handling
-		}
-		return cpureadmap[ha][addr & 0xfff];
-		//assert (addr == (addr & 0xffff)) : "Problem: address " + addr + " out of range."; don't need this for short addr
-/*		ByteBuffer buf = null;	// give me exception if I have missed anything
-		if (ultimax.get()) {	// lots of stuff is handled differently, so special case
-			switch (getHigh(addr)) {
-			case 0:
-				buf = ram;
-				break;
-			case 0xd:
-				// TODO i/o handling
-				break;
-			case 0x8:
-			case 0x9:
-				buf = cartLo.get();
-				addr &= 0x1fff;
-				break;
-			case 0xe:
-			case 0xf:
-				buf = cartHi.get();
-				addr &= 0x1fff;
-				break;
-			default:	// all others return junk
-				return -1;
-			}
-		} else {
-			switch (getHigh(addr)) {
-			case 8:
-			case 9:
-				if (exrom.get() && (!hiram.get() && !loram.get())) {
-					buf = cartLo.get();
-					addr &= 0x1fff;
-				} else {
-					buf = ram;
-				}
-				break;
-			case 0xa:
-			case 0xb:
-				if (game.get() && !hiram.get()) {
-					buf = cartHi.get();
-					addr &= 0x1fff;
-				} else if (!hiram.get() && !loram.get()) {
-					buf = basic;
-					addr &= 0x1fff;
-				} else {
-					buf = ram;
-				}
-				break;
-			case 0xd:
-				// TODO i/o handling
-				break;
-			case 0xe:
-			case 0xf:
-				if (hiram.get()) {
-					buf = ram;
-				} else {
-					buf = kernal;
-					addr &= 0x1fff;
-				}
-				break;
-			default:
-				buf = ram;
-			}
-		}
-		return buf.get(addr);
-*/	}
+		addr &= 0xfff;	// mask out low bits
+		return cpureadmap[ha].peek(addr);
+	}
 	
 	private void cpumap() {	// setup the cpu's view of memory
-		if (ultimax.get()) {
+		if (ultimax.get()) {	// shortcut for lots of changes
 			cpureadmap[0] = ram[0];
 			cpuwritemap[0] = ram[0];
-			for (int i=1; i<0xd; i++) {	// will add in roms for readmap after
+			for (int i = 1; i < 0x10; i++) {	// will overwrite roms & i/o after
 				cpureadmap[i] = scratch;
 				cpuwritemap[i] = scratch;
 			}
+			cpureadmap[0xd] = io;
+			cpuwritemap[0xd] = io;
 			cpureadmap[8] = cartLo.get()[0];
 			cpureadmap[9] = cartLo.get()[1];
 			cpureadmap[0xe] = cartHi.get()[0];
 			cpureadmap[0xf] = cartHi.get()[1];
+		} else {
+			for (int i = 0; i < 0x10; i++) {
+				cpuwritemap[i] = ram[i];
+				cpureadmap[i] = ram[i];	// will overwrite roms & i/o after
+			}
+			if (!loram.get() && !hiram.get() && !game.get()) {	// basic rom
+				cpureadmap[0xa] = basic[0];
+				cpureadmap[0xb] = basic[1];
+			}
+			if (!hiram.get() && (!game.get() || (exrom.get() && game.get()))) {	// kernal rom
+				cpureadmap[0xe] = kernal[0];
+				cpureadmap[0xf] = kernal[1];
+			}
+			if (charen.get() && (	// char rom
+					(!hiram.get() && !game.get()) || 
+					(!loram.get() && !game.get()) || 
+					(!hiram.get() && exrom.get() && game.get()))) {
+				cpureadmap[0xd] = charom;
+			}	// TODO still need i/o, roml, romh...
 		}
+		cpumapvalid = true;
 	}
 	
 	private void vicmap() {	// setup the video chip's view of memory
@@ -327,6 +247,6 @@ public class Memory {
 		if (!vicmapvalid) vicmap();
 		var ha = getHigh(addr);
 		assert (ha < 4) : "Video read: Address " + addr + " out of range.";
-		return (short) ((coloram[addr & 0x3ff] << 8) | vicreadmap[ha][addr & 0xfff]);
+		return 0;// (short) ((coloram[addr & 0x3ff] << 8) | vicreadmap[ha][addr & 0xfff]);
 	}
 }

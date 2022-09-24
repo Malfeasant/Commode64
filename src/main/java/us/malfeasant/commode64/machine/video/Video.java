@@ -8,7 +8,7 @@ import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.WritableImage;
-import us.malfeasant.commode64.machine.Memory;
+import us.malfeasant.commode64.machine.memory.Memory;
 
 public class Video {
 	private final ReadOnlyObjectWrapper<WritableImage> imageWrapper;

@@ -1,5 +1,8 @@
 package us.malfeasant.commode64.machine.video;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -13,7 +16,7 @@ import us.malfeasant.commode64.machine.memory.Memory;
 public class Video {
 	private final ReadOnlyObjectWrapper<WritableImage> imageWrapper;
 	private final ReadOnlyObjectWrapper<Rectangle2D> viewportWrapper;
-	final ReadOnlyBooleanWrapper baWrapper;
+	private final ReadOnlyBooleanWrapper baWrapper;
 	private final ReadOnlyBooleanWrapper aecWrapper;
 	
 	public final ReadOnlyObjectProperty<WritableImage> imageProperty;
@@ -112,5 +115,24 @@ public class Video {
 	
 	public int peek(int addr) {
 		return selectRegister(addr).peek(this);
+	}
+	
+	private final Set<StunSource> stunSources = EnumSet.noneOf(StunSource.class);
+	/**
+	 * Negate BA signal, getting ready to steal cycles from CPU for extra fetches
+	 * @param source which of sprites or character fetch needs extra cycles
+	 */
+	void prepareStun(StunSource source) {
+		stunSources.add(source);
+		baWrapper.set(false);	// TODO something needs to watch this and count cycles, then 3 cycles after this first
+		// goes false, also set aec to false to actually allow vic to steal cycles
+	}
+	/**
+	 * Release bus to CPU- 
+	 * @param source
+	 */
+	void releaseStun(StunSource source) {
+		stunSources.remove(source);
+		if (stunSources.isEmpty()) baWrapper.set(true);	// if nothing else needs it, gives the bus back to the CPU
 	}
 }

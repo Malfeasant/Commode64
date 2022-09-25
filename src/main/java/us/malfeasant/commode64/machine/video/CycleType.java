@@ -20,7 +20,7 @@ package us.malfeasant.commode64.machine.video;
  * @author Malfeasant
  */
 public enum CycleType {
-	S0P {	// this cycle is special- all sprites' mcount are reset from mcbase, also checked for display conditions
+	S0P {	// "cycle 58"- all sprites' mcount are reset from mcbase, also checked for display conditions
 		@Override
 		void clockLo(Video v) {
 			for (Sprite s : v.sprites) {
@@ -45,7 +45,7 @@ public enum CycleType {
 			// If enabled, fetch second byte, else idle
 			sdfetch2(v, 0);
 			// Check if Sprite 2 enabled, if so negate BA
-			if (v.sprites[2].enabled) v.baWrapper.set(false);
+			if (v.sprites[2].enabled) v.prepareStun(StunSource.SPRITE2);
 		}
 
 		@Override
@@ -57,6 +57,8 @@ public enum CycleType {
 	S1P {
 		@Override
 		void clockLo(Video v) {
+			// release ba for sprite 0
+			v.releaseStun(StunSource.SPRITE0);
 			// fetch sprite pointer
 			spfetch(v, 1);
 		}
@@ -73,7 +75,7 @@ public enum CycleType {
 			// If enabled, fetch second byte, else idle
 			sdfetch2(v, 0);
 			// Check if Sprite 3 enabled, if so negate BA
-			if (v.sprites[3].enabled) v.baWrapper.set(false);
+			if (v.sprites[3].enabled) v.prepareStun(StunSource.SPRITE3);
 		}
 
 		@Override
@@ -85,6 +87,8 @@ public enum CycleType {
 	S2P {
 		@Override
 		void clockLo(Video v) {
+			// release ba for sprite 1
+			v.releaseStun(StunSource.SPRITE1);
 			// fetch sprite pointer
 			spfetch(v, 2);
 		}
@@ -101,7 +105,7 @@ public enum CycleType {
 			// If enabled, fetch second byte, else idle
 			sdfetch2(v, 2);
 			// Check if Sprite 4 enabled, if so negate BA
-			if (v.sprites[4].enabled) v.baWrapper.set(false);
+			if (v.sprites[4].enabled) v.prepareStun(StunSource.SPRITE4);
 		}
 
 		@Override
@@ -113,6 +117,8 @@ public enum CycleType {
 	S3P {
 		@Override
 		void clockLo(Video v) {
+			// release ba for sprite 2
+			v.releaseStun(StunSource.SPRITE2);
 			// fetch sprite pointer
 			spfetch(v, 3);
 		}
@@ -129,7 +135,7 @@ public enum CycleType {
 			// If enabled, fetch second byte, else idle
 			sdfetch2(v, 3);
 			// Check if Sprite 5 enabled, if so negate BA
-			if (v.sprites[5].enabled) v.baWrapper.set(false);
+			if (v.sprites[5].enabled) v.prepareStun(StunSource.SPRITE5);
 		}
 
 		@Override
@@ -141,6 +147,8 @@ public enum CycleType {
 	S4P {
 		@Override
 		void clockLo(Video v) {
+			// release ba for sprite 3
+			v.releaseStun(StunSource.SPRITE3);
 			// fetch sprite pointer
 			spfetch(v, 4);
 		}
@@ -157,7 +165,7 @@ public enum CycleType {
 			// If enabled, fetch second byte, else idle
 			sdfetch2(v, 4);
 			// Check if Sprite 6 enabled, if so negate BA
-			if (v.sprites[6].enabled) v.baWrapper.set(false);
+			if (v.sprites[6].enabled) v.prepareStun(StunSource.SPRITE6);
 		}
 
 		@Override
@@ -169,6 +177,8 @@ public enum CycleType {
 	S5P {
 		@Override
 		void clockLo(Video v) {
+			// release ba for sprite 4
+			v.releaseStun(StunSource.SPRITE4);
 			// fetch sprite pointer
 			spfetch(v, 5);
 		}
@@ -185,7 +195,7 @@ public enum CycleType {
 			// If enabled, fetch second byte, else idle
 			sdfetch2(v, 5);
 			// Check if Sprite 7 enabled, if so negate BA
-			if (v.sprites[6].enabled) v.baWrapper.set(false);
+			if (v.sprites[6].enabled) v.prepareStun(StunSource.SPRITE7);
 		}
 
 		@Override
@@ -197,6 +207,8 @@ public enum CycleType {
 	S6P {
 		@Override
 		void clockLo(Video v) {
+			// release ba for sprite 5
+			v.releaseStun(StunSource.SPRITE5);
 			// fetch sprite pointer
 			spfetch(v, 6);
 		}
@@ -223,6 +235,8 @@ public enum CycleType {
 	S7P {
 		@Override
 		void clockLo(Video v) {
+			// release ba for sprite 6
+			v.releaseStun(StunSource.SPRITE6);
 			// fetch sprite pointer
 			spfetch(v, 7);
 		}
@@ -249,6 +263,8 @@ public enum CycleType {
 	R0 {
 		@Override
 		void clockLo(Video v) {
+			// release ba for sprite 7
+			v.releaseStun(StunSource.SPRITE7);
 			refresh(v);
 		}
 		@Override
@@ -260,7 +276,7 @@ public enum CycleType {
 		@Override
 		void clockLo(Video v) {
 			refresh(v);
-			// check if badline coming- if so, negate BA
+			// TODO check if badline coming- if so, negate BA
 		}
 
 		@Override
@@ -294,7 +310,7 @@ public enum CycleType {
 		@Override
 		void clockLo(Video v) {
 			refresh(v);
-			// increment sprite counters
+			// increment sprite counters- "cycle 15" according to vic656x.txt
 			for (Sprite s : v.sprites) {
 				if (s.notAgain) {
 					s.mcbase += 2;
@@ -312,7 +328,7 @@ public enum CycleType {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// increment sprite counters continued
+			// increment sprite counters continued- "cycle 16"
 			for (Sprite s : v.sprites) {
 				if (s.notAgain) {
 					s.mcbase++;
@@ -828,9 +844,10 @@ public enum CycleType {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if 6569 & Sprite 0 enabled, negate BA
 			
 			if (v.variantProperty.get() == Variant.PAL_NEW || v.variantProperty.get() == Variant.PAL_OLD) {
+				// Check if Sprite 0 enabled, if so negate BA
+				if (v.sprites[0].enabled) v.prepareStun(StunSource.SPRITE0);
 				cycle55(v);
 			}
 		}
@@ -845,9 +862,10 @@ public enum CycleType {
 		@Override
 		void clockLo(Video v) {
 			// TODO Idle fetch
-			// if 6567R56A & Sprite 0 enabled, negate BA
 			
 			if (v.variantProperty.get() == Variant.NTSC_OLD) {
+				// Check if Sprite 0 enabled, if so negate BA
+				if (v.sprites[0].enabled) v.prepareStun(StunSource.SPRITE0);
 				cycle55(v);
 			} else if (v.variantProperty.get() == Variant.PAL_NEW || v.variantProperty.get() == Variant.PAL_OLD) {
 				cycle56(v);
@@ -864,13 +882,19 @@ public enum CycleType {
 		@Override
 		void clockLo(Video v) {
 			// TODO Idle fetch
-			// if 6567R8 & Sprite 0 enabled, negate BA
-			// if 6569 & Sprite 1 enabled, negate BA
 			
-			if (v.variantProperty.get() == Variant.NTSC_NEW) {
+			switch (v.variantProperty.get()) {
+			case NTSC_NEW:
+				// Check if Sprite 0 enabled, if so negate BA
+				if (v.sprites[0].enabled) v.prepareStun(StunSource.SPRITE0);
 				cycle55(v);
-			} else if (v.variantProperty.get() == Variant.NTSC_OLD) {
+				break;
+			case NTSC_OLD:
 				cycle56(v);
+				break;
+			default:	// PAL either old or new
+				// Check if Sprite 1 enabled, if so negate BA
+				if (v.sprites[1].enabled) v.prepareStun(StunSource.SPRITE1);
 			}
 		}
 
@@ -884,9 +908,11 @@ public enum CycleType {
 		@Override
 		void clockLo(Video v) {
 			// TODO Idle fetch
-			// if 6567R56A & Sprite 1 enabled, negate BA
 			
-			if (v.variantProperty.get() == Variant.NTSC_NEW) {
+			if (v.variantProperty.get() == Variant.NTSC_OLD) {
+				// Check if Sprite 1 enabled, if so negate BA
+				if (v.sprites[1].enabled) v.prepareStun(StunSource.SPRITE1);
+			} else if (v.variantProperty.get() == Variant.NTSC_NEW) {
 				cycle56(v);
 			}
 		}
@@ -902,6 +928,10 @@ public enum CycleType {
 		void clockLo(Video v) {
 			// TODO Idle fetch
 			// I3: if 6567R8 & Sprite 1 enabled, negate BA
+			if (v.variantProperty.get() == Variant.NTSC_NEW) {
+				// Check if Sprite 1 enabled, if so negate BA
+				if (v.sprites[1].enabled) v.prepareStun(StunSource.SPRITE1);
+			}
 		}
 
 		@Override
@@ -918,16 +948,6 @@ public enum CycleType {
 	abstract void clockLo(Video v);
 	abstract void clockHi(Video v);
 	
-	private CycleType nextFor(Variant v) {
-		return (ordinal() >= v.endOfLine) ? values()[0] : values()[ordinal() + 1];
-	}
-	private CycleType ahead3(Variant v) {
-		var ord = ordinal() + 3;
-		if (ord > v.endOfLine) {
-			ord -= v.endOfLine + 1; // again because this is last cycle from 0, not number of
-		}
-		return values()[ord];
-	}
 	private static void spfetch(Video v, int sprite) {
 		v.sprites[sprite].pointer = (v.memoryProperty.get().vread((short) (v.vmbase | 0x3f8 | sprite))) << 6;
 	}

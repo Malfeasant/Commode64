@@ -1,7 +1,5 @@
 package us.malfeasant.commode64;
 
-import java.util.prefs.Preferences;
-
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
@@ -14,7 +12,6 @@ import us.malfeasant.commode64.timing.Impetus;
  * JavaFX App
  */
 public class App extends Application {
-	private final Preferences prefs = Preferences.userNodeForPackage(getClass());
 	
     @Override
     public void start(Stage stage) {

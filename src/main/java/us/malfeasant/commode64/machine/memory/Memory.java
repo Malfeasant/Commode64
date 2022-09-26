@@ -1,5 +1,7 @@
 package us.malfeasant.commode64.machine.memory;
 
+import org.tinylog.Logger;
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -162,6 +164,7 @@ public class Memory {
 		} else {
 			data |= (portBits & 0x20);	// read back what was last written
 		}
+		Logger.debug("CPU I/O Port read- Direction: {} Bits: {}", portDirection, data);
 		return data;
 	}
 	
@@ -184,6 +187,7 @@ public class Memory {
 	
 	private void cpumap() {	// setup the cpu's view of memory
 		if (ultimax.get()) {	// shortcut for lots of changes
+			Logger.debug("Ultimax mode on.");
 			cpureadmap[0] = ram[0];
 			cpuwritemap[0] = ram[0];
 			for (int i = 1; i < 0x10; i++) {	// will overwrite roms & i/o after
@@ -201,6 +205,7 @@ public class Memory {
 			cpuwritemap[0xe] = cartHi.get()[0];	// oddly, in ultimax mode, ROMH is enabled for writes as well
 			cpuwritemap[0xf] = cartHi.get()[1];
 		} else {
+			Logger.debug("Ultimax mode off.");
 			for (int i = 0; i < 0x10; i++) {	// start with all ram,
 				cpuwritemap[i] = ram[i];
 				cpureadmap[i] = ram[i];	// will overwrite roms & i/o after
@@ -208,16 +213,19 @@ public class Memory {
 			if (!loram.get() && !hiram.get() && !game.get()) {	// basic rom
 				cpureadmap[0xa] = basic[0];
 				cpureadmap[0xb] = basic[1];
-			}
+				Logger.debug("BASIC ROM enabled.");
+			} else Logger.debug("BASIC ROM disabled.");
 			if (!hiram.get() && (!game.get() || (exrom.get() && game.get()))) {	// kernal rom
 				cpureadmap[0xe] = kernal[0];
 				cpureadmap[0xf] = kernal[1];
-			}
+				Logger.debug("KERNAL ROM enabled.");
+			} else Logger.debug("KERNAL ROM disabled.");
 			if (charen.get()) {	// char rom, maybe...
 				if ((!hiram.get() && !game.get()) ||
 						(!loram.get() && !game.get()) ||
 						(!hiram.get() && exrom.get() && game.get())) {
 					cpureadmap[0xd] = charom;
+					Logger.debug("Character ROM enabled.");
 				}
 			} else {	// I/O, maybe...
 				if ((!hiram.get() && !game.get()) ||
@@ -226,16 +234,19 @@ public class Memory {
 						(!loram.get() && exrom.get() && game.get())) {
 					cpureadmap[0xd] = io;
 					cpuwritemap[0xd] = io;
-				}
+					Logger.debug("I/O enabled.");
+				} else Logger.debug("RAM under I/O enabled.");
 			}
 			if (!loram.get() && !hiram.get() && exrom.get()) {	// ROML
 				cpureadmap[8] = cartLo.get()[0];
 				cpureadmap[9] = cartLo.get()[1];
-			}
+				Logger.debug("Cartridge enabled at 8000-9fff.");
+			} else Logger.debug("No cartridge at 8000-9fff.");
 			if (!hiram.get() && exrom.get() && game.get()) {	// ROMH
 				cpureadmap[0xa] = cartHi.get()[0];
 				cpureadmap[0xb] = cartHi.get()[1];
-			}
+				Logger.debug("Cartridge enabled at a000-bfff.");
+			} else Logger.debug("No cartridge at a000-bfff.");
 		}
 		cpumapvalid = true;
 	}

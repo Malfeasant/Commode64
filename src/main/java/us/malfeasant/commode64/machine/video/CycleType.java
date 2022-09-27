@@ -948,41 +948,45 @@ public enum CycleType {
 	abstract void clockLo(Video v);
 	abstract void clockHi(Video v);
 	
+	/**
+	 * Helper function to read from video and optionally mask color bits
+	 */
+	private static int vread(Video v, int addr, boolean withColor) {
+		return v.memoryProperty.get().vread(addr) & (withColor ? 0xfff : 0xff);
+	}
 	private static void spfetch(Video v, int sprite) {
-		v.sprites[sprite].pointer = (v.memoryProperty.get().vread((short) (v.vmbase | 0x3f8 | sprite))) << 6;
+		v.sprites[sprite].pointer = vread(v, v.vmbase | 0x3f8 | sprite, false) << 6;
 	}
 	private static void sdfetch1(Video v, int sprite) {
 		var s = v.sprites[sprite];
 		if (s.dma) {
 			// if ba was not negated in time, fetch does not get to set address, but still reads data... TODO?
-			s.sequencer = v.preBA == 0 ?
-					(v.memoryProperty.get().vread((short) (s.pointer | s.mcount))) : 0xff << 16;
+			s.sequencer = v.preBA == 0 ? vread(v, s.pointer | s.mcount, false) << 16 : 0xff0000;
 			s.mcount++;	// increments whether the fetch happens or not
 		}
 	}
 	private static void sdfetch2(Video v, int sprite) {
 		var s = v.sprites[sprite];
 		if (s.dma) {
-			s.sequencer |= (v.memoryProperty.get().vread((short) (s.pointer | s.mcount++))) << 8;
+			s.sequencer |= vread(v, (s.pointer | s.mcount++), false) << 8;
 		} else {
-			v.memoryProperty.get().vread((short) 0x3fff);	// idle
+			v.memoryProperty.get().vread(0x3fff);	// idle
 		}
 	}
 	private static void sdfetch3(Video v, int sprite) {
 		var s = v.sprites[sprite];
 		if (s.dma) {
 			// if ba was not negated in time, fetch does not get to set address, but still reads data... TODO?
-			s.sequencer = v.preBA == 0 ?
-					(v.memoryProperty.get().vread((short) (s.pointer | s.mcount))) : 0xff;
+			s.sequencer = v.preBA == 0 ? vread(v, s.pointer | s.mcount, false) : 0xff;
 			s.mcount++;	// increments whether the fetch happens or not
 		}
 	}
 	private static void refresh(Video v) {
-		v.memoryProperty.get().vread((short) (0x3f00 | v.refreshCounter--));	// discard the result
+		vread(v, 0x3f00 | v.refreshCounter--, false);	// discard the result
 	}
 	private static void cFetch(Video v, int index) {	// performs a character fetch, stores in buffer
 		if (v.preBA == 0 && v.bad) {
-			v.lineBuffer[index] = (short) v.memoryProperty.get().vread(v.vmbase);	// TODO more to address calculation
+			v.lineBuffer[index] = (short) vread(v, v.vmbase, true);	// TODO more to address calculation
 		}
 	}
 	private static void cycle55(Video v) {	// "cycle 55" according to vic656x.txt- does a bunch of sprite preparations

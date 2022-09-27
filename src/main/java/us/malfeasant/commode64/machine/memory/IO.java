@@ -9,10 +9,10 @@ public class IO extends Chunk {
 	// TODO properties for SID, CIAs, I/O expansions, anything else?
 	
 	/**
-	 * Only constructor- not much to do here.
+	 * Only constructor- will use inherited array for color RAM
 	 */
 	IO() {
-		super(null, -1);
+		super(new byte[0x400], 0);
 	}
 	
 	@Override
@@ -26,7 +26,7 @@ public class IO extends Chunk {
 			// TODO
 			break;
 		case 0x800:	// coloram
-			data = (byte) videoProp.get().peek(addr & 0x3ff);
+			data = contents[addr & 0x3ff];	// TODO set high bits randomly?
 			break;
 		case 0xc00:	// CIAs, special I/O blocks
 			switch (addr & 0xf00) {
@@ -57,7 +57,7 @@ public class IO extends Chunk {
 			// TODO
 			break;
 		case 0x800:	// coloram
-			videoProp.get().poke(addr & 0x3ff, data & 0xf);
+			contents[addr & 0x3ff] = (byte) (data & 0xf);
 			break;
 		case 0xc00:	// CIAs, special I/O blocks
 			switch (addr & 0xf00) {

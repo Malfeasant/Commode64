@@ -982,7 +982,7 @@ public enum CycleType {
 	}
 	private static void cFetch(Video v, int index) {	// performs a character fetch, stores in buffer
 		if (v.preBA == 0 && v.bad) {
-			v.lineBuffer[index] = v.memoryProperty.get().vread((short) v.vmbase);	// TODO more to address calculation
+			v.lineBuffer[index] = (short) v.memoryProperty.get().vread(v.vmbase);	// TODO more to address calculation
 		}
 	}
 	private static void cycle55(Video v) {	// "cycle 55" according to vic656x.txt- does a bunch of sprite preparations

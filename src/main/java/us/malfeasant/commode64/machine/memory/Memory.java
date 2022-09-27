@@ -186,6 +186,7 @@ public class Memory {
 	}
 	
 	private void cpumap() {	// setup the cpu's view of memory
+		Logger.info("Remapping CPU Memory...");
 		if (ultimax.get()) {	// shortcut for lots of changes
 			Logger.debug("Ultimax mode on.");
 			cpureadmap[0] = ram[0];
@@ -252,33 +253,38 @@ public class Memory {
 	}
 	
 	private void vicmap() {	// setup the video chip's view of memory
+		Logger.info("Remapping VIC Memory...");
 		if (ultimax.get()) {	// vic sees 12k of ram and 2nd half of hi cart rom (but cpu can't write past 4k of ram)
+			Logger.debug("Ultimax mode on.");
 			for (int i = 0; i < 3; i++) {
 				vicreadmap[i] = ram[i];
 			}
 			vicreadmap[3] = cartHi.get()[1];
 		} else {
+			Logger.debug("Ultimax mode off.");
 			int ha = (va14.get() ? 4 : 0);
 			ha |= va15.get() ? 8 : 0;
+			Logger.debug("Video set to bank {}.", ha >> 2);
 			for (int i = 0; i < 4; i++) {
 				vicreadmap[i] = ram[i + ha];
 			}
 			if (!va14.get()) {	// special circuit to character generator rom
 				vicreadmap[1] = charom;
-			}
+				Logger.debug("Video sees character ROM at 1000-1fff.");
+			} else Logger.debug("Video sees RAM at 1000-1fff.");
 		}
 		vicmapvalid = true;
 	}
 	
 	/**
 	 * Models a fetch from VIC
-	 * @param addr - 14-bit address to read from- top 2 bits come from CIA #? TODO which?  and how?
+	 * @param addr - 14-bit address to read from- top 2 bits come from CIA
 	 * @return - 12-bits of data- top 4 bits come from color ram
 	 */
-	public short vread(short addr) {
+	public int vread(int addr) {
 		if (!vicmapvalid) vicmap();
 		var ha = getHigh(addr);
 		assert (ha < 4) : "Video read: Address " + addr + " out of range.";
-		return 0;// (short) ((coloram[addr & 0x3ff] << 8) | vicreadmap[ha][addr & 0xfff]);
+		return (io.contents[addr & 0x3ff] << 8) | vicreadmap[ha].peek(addr);
 	}
 }

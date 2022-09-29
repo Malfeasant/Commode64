@@ -350,494 +350,456 @@ public enum CycleType {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 2);
 		}
 	},
 	G02 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 3);
 		}
 	},
 	G03 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 4);
 		}
 	},
 	G04 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 5);
 		}
 	},
 	G05 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 6);
 		}
 	},
 	G06 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 7);
 		}
 	},
 	G07 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 8);
 		}
 	},
 	G08 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 9);
 		}
 	},
 	G09 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 10);
 		}
 	},
 	G10 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 11);
 		}
 	},
 	G11 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 12);
 		}
 	},
 	G12 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 13);
 		}
 	},
 	G13 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 14);
 		}
 	},
 	G14 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 15);
 		}
 	},
 	G15 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 16);
 		}
 	},
 	G16 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 17);
 		}
 	},
 	G17 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 18);
 		}
 	},
 	G18 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 19);
 		}
 	},
 	G19 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 20);
 		}
 	},
 	G20 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 21);
 		}
 	},
 	G21 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 22);
 		}
 	},
 	G22 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 23);
 		}
 	},
 	G23 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 24);
 		}
 	},
 	G24 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 25);
 		}
 	},
 	G25 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 26);
 		}
 	},
 	G26 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 27);
 		}
 	},
 	G27 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 28);
 		}
 	},
 	G28 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 29);
 		}
 	},
 	G29 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 30);
 		}
 	},
 	G30 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 31);
 		}
 	},
 	G31 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 32);
 		}
 	},
 	G32 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 33);
 		}
 	},
 	G33 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 34);
 		}
 	},
 	G34 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 35);
 		}
 	},
 	G35 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 36);
 		}
 	},
 	G36 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 37);
 		}
 	},
 	G37 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 38);
 		}
 	},
 	G38 {
 		@Override
 		void clockLo(Video v) {
 			// TODO g fetch
-			// if badline, steal cycle for c fetch
 		}
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// if badline, steal cycle for c fetch
+			cFetch(v, 39);
 		}
 	},
 	G39 {
@@ -854,8 +816,7 @@ public enum CycleType {
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// Nothing
 		}
 	},
 	I0 {
@@ -874,8 +835,7 @@ public enum CycleType {
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// Nothing
 		}
 	},
 	I1 {
@@ -900,8 +860,7 @@ public enum CycleType {
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// Nothing
 		}
 	},
 	I2 {	// 6569 does not include this
@@ -919,8 +878,7 @@ public enum CycleType {
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// Nothing
 		}
 	},
 	I3 {	// 6569, 6567R56A do not include this
@@ -936,8 +894,7 @@ public enum CycleType {
 
 		@Override
 		void clockHi(Video v) {
-			// TODO Auto-generated method stub
-			
+			// Nothing
 		}
 	},
 	;
@@ -948,6 +905,9 @@ public enum CycleType {
 	abstract void clockLo(Video v);
 	abstract void clockHi(Video v);
 	
+	CycleType nextFor(Variant v) {	// gets next cycle- each variant has a different last cycle.
+		return (ordinal() >= v.endOfLine) ? values()[0] : values()[ordinal() + 1];
+	}
 	/**
 	 * Helper function to read from video and optionally mask color bits
 	 */
@@ -961,7 +921,7 @@ public enum CycleType {
 		var s = v.sprites[sprite];
 		if (s.dma) {
 			// if ba was not negated in time, fetch does not get to set address, but still reads data... TODO?
-			s.sequencer = v.preBA == 0 ? vread(v, s.pointer | s.mcount, false) << 16 : 0xff0000;
+			s.sequencer = !v.aecProperty.get() ? vread(v, s.pointer | s.mcount, false) << 16 : 0xff0000;
 			s.mcount++;	// increments whether the fetch happens or not
 		}
 	}
@@ -977,7 +937,7 @@ public enum CycleType {
 		var s = v.sprites[sprite];
 		if (s.dma) {
 			// if ba was not negated in time, fetch does not get to set address, but still reads data... TODO?
-			s.sequencer = v.preBA == 0 ? vread(v, s.pointer | s.mcount, false) : 0xff;
+			s.sequencer = !v.aecProperty.get() ? vread(v, s.pointer | s.mcount, false) : 0xff;
 			s.mcount++;	// increments whether the fetch happens or not
 		}
 	}
@@ -985,7 +945,7 @@ public enum CycleType {
 		vread(v, 0x3f00 | v.refreshCounter--, false);	// discard the result
 	}
 	private static void cFetch(Video v, int index) {	// performs a character fetch, stores in buffer
-		if (v.preBA == 0 && v.bad) {
+		if (!v.aecProperty.get() && v.bad) {
 			v.lineBuffer[index] = (short) vread(v, v.vmbase, true);	// TODO more to address calculation
 		}
 	}

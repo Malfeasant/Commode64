@@ -26,11 +26,9 @@ public class Video {
 	public final ObjectProperty<Memory> memoryProperty;	// points to memory handler
 	public final ObjectProperty<Variant> variantProperty;	// chip revision bits
 	
-	private int rasterX;	// the x coordinate- this does not get reset at the same time as rasterByte.
-	private int rasterY;	// the actual y coordinate within the generated image
+	private int imageX;	// the x coordinate within the generated image- different from raster position
+	private int imageY;	// the y coordinate within the generated image- different from raster position
 	int refreshCounter;	// not sure if there is anything to be gained by simulating this, but it shouldn't hurt much...
-	private boolean activeX;	// if generated pixels are valid in the x dimension
-	private boolean activeY;	// if generated pixels are valid in the y dimension
 	
 	final short[] lineBuffer = new short[40];	// stores result of c-access for 8 lines- includes color nybble too
 	
@@ -47,9 +45,8 @@ public class Video {
 	int address;	// temporarily holds address before placing on bus
 	
 	boolean bad;	// ongoing bad line condition- will be stealing cycles for c fetches
-	boolean aec;	// if true, cpu can run bus cycle.  if false, vic will be stealing a cycle.
-	int preBA = 4;	// counts cycles between asserting ba and aec- if ba=0, ok to steal a cycle
-
+	int preBA = 4;	// counts cycles between asserting ba and aec- if preBA=0, ok to steal a cycle
+	
 	boolean csel = false;	// border adjust for fine scrolling- true = 40 columns, false = 38 columns
 	int xscroll = 0;	// 3 bits, adjusts x position of video matrix for fine scrolling
 	boolean rsel = false;	// border adjust for fine scrolling- true = 25 rows, false = 24 rows
@@ -96,13 +93,22 @@ public class Video {
 		currentCycle = CycleType.values()[0];
 	}
 	/**
-	 * Advances one cpu clock cycle- so 8 pixel clock cycles.  Does c-access, if needed/allowed does g-access as well.
-	 * Also s-access for sprites. 
+	 * Advances one cpu clock cycle- so 8 pixel clock cycles.  Handles memory accesses. 
 	 */
 	public void crystalTick() {
-		currentCycle.clockLo(this);	// modifies internal state, including replacing currentCycle with the next
-		// TODO check if ok to steal cycle, do clockHi()
-		// TODO more
+		if (baWrapper.get()) {	// if nothing is pulling ba low, reset counter
+			preBA = 4;
+		} else {
+			if (--preBA < 0) {	// start counting down but
+				preBA = 0;	// don't pass 0
+			}
+		}
+		aecWrapper.set(false);	// always low in first half of cycle
+		currentCycle.clockLo(this);	// modifies internal state
+		aecWrapper.set(preBA != 0);	// aec normally goes high in second half, unless ba has been low for 3 cycles
+		currentCycle.clockHi(this);	// Always call second cycle- it must check aec to determine if it can steal cycle
+		// TODO more - emit pixels (should it be done twice, after each cycle half?  or can it all be done here?)
+		currentCycle = currentCycle.nextFor(variantProperty.get());	// advance the cycle
 	}
 	
 	private Register selectRegister(int addr) {
@@ -124,8 +130,7 @@ public class Video {
 	 */
 	void prepareStun(StunSource source) {
 		stunSources.add(source);
-		baWrapper.set(false);	// TODO something needs to watch this and count cycles, then 3 cycles after this first
-		// goes false, also set aec to false to actually allow vic to steal cycles
+		baWrapper.set(false);
 	}
 	/**
 	 * Release bus to CPU- 

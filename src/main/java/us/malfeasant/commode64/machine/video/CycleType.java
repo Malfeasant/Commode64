@@ -943,6 +943,7 @@ public enum CycleType {
 	}
 	private static void refresh(Video v) {
 		vread(v, 0x3f00 | v.refreshCounter--, false);	// discard the result
+		v.refreshCounter &= 0xff;	// confine to 8 bits
 	}
 	private static void cFetch(Video v, int index) {	// performs a character fetch, stores in buffer
 		if (!v.aecProperty.get() && v.bad) {

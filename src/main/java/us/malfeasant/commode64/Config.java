@@ -2,6 +2,8 @@ package us.malfeasant.commode64;
 
 import java.util.prefs.Preferences;
 
+import org.tinylog.Logger;
+
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import us.malfeasant.commode64.machine.video.Variant;
@@ -32,6 +34,7 @@ public class Config {
     	Crystal crys = Crystal.valueOf(prefs.get(Crystal.class.getSimpleName(), Crystal.NTSC.name()));
     	Power pow = Power.valueOf(prefs.get(Power.class.getSimpleName(), Power.NA.name()));
     	Variant var = Variant.valueOf(prefs.get(Variant.class.getSimpleName(), Variant.NTSC_NEW.name()));
+		Logger.info("Read default Config:\n\tCrystal {}\n\tPower {}\n\tVariant {}", crys, pow, var);
 		return new Config(crys, pow, var);
 	}
 	public static Config getNTSC() {
@@ -57,6 +60,8 @@ public class Config {
 		prefs.put(Crystal.class.getSimpleName(), crystalProp.get().name());
 		prefs.put(Power.class.getSimpleName(), powerProp.get().name());
 		prefs.put(Variant.class.getSimpleName(), variantProp.get().name());
+		Logger.info("Wrote new defaults:\n\tCrystal {}\n\tPower {}\n\tVariant {}",
+				crystalProp.get(), powerProp.get(), variantProp.get());
 	}
 	
 	public ReadOnlyObjectProperty<Crystal> crystalProperty() {

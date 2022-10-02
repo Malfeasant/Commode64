@@ -3,6 +3,8 @@ package us.malfeasant.commode64.machine.memory;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.tinylog.Logger;
+
 /**
  * Models a 4k chunk of memory space.  Will be subclassed by RAM, ROM, I/O, others?
  * @author Malfeasant
@@ -54,26 +56,31 @@ abstract class Chunk {
 	// TODO - make the following more general purpose for loading external files (cartridges? alternate kernal/basic?)
 	private static ROM[] fromIncludedFile(String name, int expectedChunks) {
 		byte[] contents;
+		Logger.debug("Attempting to read file {} into new ROM object.", name);
 		try (var file = ClassLoader.getSystemClassLoader().getResourceAsStream(name)) {
 			if (file.available() == expectedChunks * 0x1000) {
 				contents = file.readAllBytes();
 			} else {
 				// Shouldn't happen...
-				throw new Error("File " + name + " is unexpected length.  Aborting.");
+				Logger.error("File '{}' is unexpected length.  Aborting.", name);
+				throw new Error();	// bail gracelessly
 			}
 		} catch (FileNotFoundException e) {
 			// Since it's included in the jar, this should never happen...
-			System.err.println("File " + name + " not found.  Aborting.");
+			Logger.error("File '{}' not found.  Aborting.", name);
+			Logger.error(e);
 			throw new Error(e);	// bail gracelessly
 		} catch (IOException e) {
 			// could happen... will have to see it happen to decide what to do
-			System.err.println("Problem reading file: " + name + ".  Aborting.");
+			Logger.error("Problem reading file: '{}'.  Aborting.", name);
+			Logger.error(e);
 			throw new Error(e);	// TODO recovery?
 		}
 		var rom = new ROM[expectedChunks];
 		for (int i=0; i < expectedChunks; i++) {
 			rom[i] = new ROM(contents, i * 0x1000);
 		}
+		Logger.debug("Read file '{}' into new ROM object.", name);
 		return rom;
 	}
 }

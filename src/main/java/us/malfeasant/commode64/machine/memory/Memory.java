@@ -284,7 +284,6 @@ public class Memory {
 	public int vread(int addr) {
 		if (!vicmapvalid) vicmap();
 		var ha = getHigh(addr);
-		assert (ha < 4) : "Video read: Address " + addr + " out of range.";
 		return (io.contents[addr & 0x3ff] << 8) | vicreadmap[ha].peek(addr);
 	}
 }

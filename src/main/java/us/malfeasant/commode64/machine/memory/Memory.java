@@ -7,6 +7,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import us.malfeasant.commode64.machine.ChipSet;
 
 /**
  * Models the address/data buses and related signals- including the video chip's special circuit enabling 12-bit fetches,
@@ -45,15 +46,15 @@ public class Memory {
 	public final BooleanProperty hiram;	// controlled by cpu- false=kernal rom at e000-ffff, else ram
 	public final BooleanProperty charen;	// controlled by cpu- false=i/o at d000-dfff, else char rom, unless...
 	
-	private byte portBits;	// cpu i/o port bits (stored here because otherwise could be lost if direction set to input)
-	private byte portDirection;	// direction for above- true = output
+	private int portBits;	// cpu i/o port bits (stored here because otherwise could be lost if direction set to input)
+	private int portDirection;	// direction for above- true = output
 	
 	boolean cpumapvalid = false;	// false means we need to setup the memory map before next access
 	boolean vicmapvalid = false;	// same as above but for vic
 	
-	public Memory() {
+	public Memory(ChipSet cs) {
 		ram = Chunk.ram();
-		io = new IO();
+		io = new IO(cs);
 		scratch = new Scratch();
 		charom = Chunk.charrom();
 		basic = Chunk.basic();
@@ -118,7 +119,7 @@ public class Memory {
 	 * @param addr - Address to write to
 	 * @param data - Data to be written
 	 */
-	public void poke(short addr, byte data) {
+	public void poke(int addr, int data) {
 		if ((addr & 0xfffe) == 0) {	// i/o port or direction
 			if (addr == 0) {
 				portDirection = data;

@@ -4,8 +4,9 @@ enum State {
 	RESET {
 		@Override
 		void clockHi(CPU c) {
-			// TODO Auto-generated method stub
-			
+			if (!c.resProp.get()) {
+				// TODO complete reset process...
+			}
 		}
 	},
 	INTERRUPT {

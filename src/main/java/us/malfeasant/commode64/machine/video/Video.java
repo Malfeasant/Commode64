@@ -90,6 +90,7 @@ public class Video {
 		for (int i=0; i<8; ++i) {
 			sprites[i] = new Sprite();
 		}
+		
 		currentCycle = CycleType.values()[0];
 	}
 	/**

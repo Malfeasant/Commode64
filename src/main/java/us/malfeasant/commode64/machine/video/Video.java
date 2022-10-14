@@ -88,7 +88,7 @@ public class Video {
 		
 		sprites = new Sprite[8];
 		for (int i=0; i<8; ++i) {
-			sprites[i] = new Sprite();
+			sprites[i] = new Sprite(i);
 		}
 		
 		currentCycle = CycleType.values()[0];

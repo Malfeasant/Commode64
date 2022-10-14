@@ -5,6 +5,17 @@ package us.malfeasant.commode64.machine.video;
  * @author Malfeasant
  */
 class Sprite {
+	private final int which;
+	
+	Sprite(int which) {
+		this.which = which;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("Sprite %d", which);
+	}
+	
 	boolean enabled;	// d015
 	boolean dma;		// fetch sprite data (stealing cycles from cpu as needed) and fill sequencer
 	boolean display;	// shift bits out of sequencer after x coord matches

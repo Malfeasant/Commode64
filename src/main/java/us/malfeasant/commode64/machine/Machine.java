@@ -40,6 +40,8 @@ public class Machine implements CrystalListener, PowerListener {
 			memory.poke(0xd800, 0xa);	// text color pink
 		}
 		memory.poke(0x7f8, 0x40);	// set sprite 0 pointer to pick up char rom
+		memory.poke(0xd000, 0xa0);	// sprite 0 x position
+		memory.poke(0xd001, 0x64);	// sprite 0 y position
 		memory.poke(0xd011, 0x10);	// sets DEN
 		memory.poke(0xd015, 1);	// enable sprite 0
 		//memory.poke(0xd016, 0);

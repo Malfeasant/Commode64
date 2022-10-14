@@ -1,4 +1,9 @@
 package us.malfeasant.commode64.machine.video;
+
+import org.tinylog.Logger;
+
+import us.malfeasant.commode64.App;
+
 // TODO I think I want to split these- so each item has a firsthalf and secondhalf cycle- and only call secondhalf if
 // ba has gone to 0 so ok to steal a cycle... and rather than doing the fetches directly, they should set an address
 // variable in the passed video object, then let it do the fetch- otherwise no way to modify addr in case of ecm...
@@ -23,10 +28,11 @@ public enum CycleType {
 	S0P {	// "cycle 58"- all sprites' mcount are reset from mcbase, also checked for display conditions
 		@Override
 		void clockLo(Video v) {
-			for (Sprite s : v.sprites) {
+			for (var s : v.sprites) {
 				s.mcount = s.mcbase;
 				if (s.dma && s.y == (v.rasterCurrent & 0xff)) {
 					s.display = true;
+					if (App.DEBUG) Logger.debug("{} will display starting in line {}.", s, v.rasterCurrent);
 				}
 			}
 			// fetch sprite pointer
@@ -117,6 +123,8 @@ public enum CycleType {
 	S3P {
 		@Override
 		void clockLo(Video v) {
+			// inc raster
+			v.rasterCurrent++;	// does not check for out of bounds yet- next cycle
 			// release ba for sprite 2
 			v.releaseStun(StunSource.SPRITE2);
 			// fetch sprite pointer
@@ -132,6 +140,13 @@ public enum CycleType {
 	S3S {
 		@Override
 		void clockLo(Video v) {
+			// reset raster if reached end of field
+			if (v.rasterCurrent > v.variantProperty.get().endOfFrame) {
+				v.rasterCurrent = 0;
+				if (App.DEBUG) {
+					Logger.debug("New line at {}", System.currentTimeMillis());
+				}
+			}
 			// If enabled, fetch second byte, else idle
 			sdfetch2(v, 3);
 			// Check if Sprite 5 enabled, if so negate BA

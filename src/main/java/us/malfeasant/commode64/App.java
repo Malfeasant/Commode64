@@ -12,8 +12,8 @@ import us.malfeasant.commode64.timing.Impetus;
  * JavaFX App
  */
 public class App extends Application {
-	public static final boolean DEBUG = true;	// TODO change this to false for final build, since it's final, any
-	// code in an if block will not be compiled when false.
+	public static final boolean DEBUG = true;	// Enables extra debugging stuff that might severely impact performance.
+	// Supposedly since this is constant, if it's false the whole block should not even be compiled in...
 	
     @Override
     public void start(Stage stage) {

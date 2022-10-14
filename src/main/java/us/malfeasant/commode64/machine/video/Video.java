@@ -2,6 +2,7 @@ package us.malfeasant.commode64.machine.video;
 
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -35,6 +36,7 @@ public class Video {
 	private long outBuffer;	// stores character pixels- each new pixel added shifts to left
 	// where these are read from depends on smooth scrolling register
 	
+	int rasterX;	// 9 bits, horizontal coordinate for light pen, sprites, border compare
 	int rasterCompare;	// 9-bits used to set an interrupt to occur on a given line
 	int rasterCurrent;	// 9-bits, the current raster line being scanned
 	
@@ -68,6 +70,8 @@ public class Video {
 	int spmc1;	// Sprite multicolor 1 (shared by all sprites)
 	
 	final Sprite[] sprites;
+	final Set<Sprite> spritesThisLine;	// holds the sprites that have matched y position
+	final Set<Sprite> spritesDisplaying;	// holds sprites that have matched x position
 	
 	public Video() {
 		imageWrapper = new ReadOnlyObjectWrapper<>();	// image that we render into
@@ -87,6 +91,8 @@ public class Video {
 		});
 		
 		sprites = new Sprite[8];
+		spritesThisLine = new TreeSet<>((o1, o2) -> { return o1.which - o2.which; });
+		spritesDisplaying = new TreeSet<>((o1, o2) -> { return o1.which - o2.which; });
 		for (int i=0; i<8; ++i) {
 			sprites[i] = new Sprite(i);
 		}
@@ -106,12 +112,34 @@ public class Video {
 		}
 		aecWrapper.set(false);	// always low in first half of cycle
 		currentCycle.clockLo(this);	// modifies internal state
+		emitPixels();
 		aecWrapper.set(preBA != 0);	// aec normally goes high in second half, unless ba has been low for 3 cycles
 		currentCycle.clockHi(this);	// Always call second cycle- it must check aec to determine if it can steal cycle
-		// TODO more - emit pixels (should it be done twice, after each cycle half?  or can it all be done here?)
+		emitPixels();	// has to be done twice, after each cycle half
 		currentCycle = currentCycle.nextFor(variantProperty.get());	// advance the cycle
 	}
 	
+	private void emitPixels() {	// emits block of 4 pixels
+		for (var count = 0; count < 4; count++) {
+			var spritePix = -1;	// transparent
+			var x = rasterX + count;
+			for (var sprite : spritesThisLine) {
+				if (sprite.x == x) {
+					spritesDisplaying.add(sprite);
+				}
+				if (sprite.sequencer == 0) {	// all bits have been shifted
+					spritesDisplaying.remove(sprite);
+				}
+			}
+			for (var sprite : spritesDisplaying) {
+				if (sprite.multiMid < 0) {
+					
+				} else {
+					spritePix = sprite.multiMid;
+				}
+			}
+		}
+	}
 	private Register selectRegister(int addr) {
 		addr &= 0x3f;	// any other bits are ignored
 		return (addr < 0x30) ? Register.values()[addr] : Register.D02F;

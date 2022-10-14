@@ -12,7 +12,7 @@ import us.malfeasant.commode64.timing.Impetus;
  * JavaFX App
  */
 public class App extends Application {
-	public static final boolean DEBUG = true;	// Enables extra debugging stuff that might severely impact performance.
+	public static final boolean DEBUG = false;	// Enables extra debugging stuff that might severely impact performance.
 	// Supposedly since this is constant, if it's false the whole block should not even be compiled in...
 	
     @Override

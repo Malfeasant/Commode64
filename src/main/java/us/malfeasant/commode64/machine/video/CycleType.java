@@ -31,7 +31,7 @@ public enum CycleType {
 			for (var s : v.sprites) {
 				s.mcount = s.mcbase;
 				if (s.dma && s.y == (v.rasterCurrent & 0xff)) {
-					s.display = true;
+					v.spritesThisLine.add(s);
 					if (App.DEBUG) Logger.debug("{} will display starting in line {}.", s, v.rasterCurrent);
 				}
 			}
@@ -307,7 +307,8 @@ public enum CycleType {
 
 		@Override
 		void clockHi(Video v) {
-			// Nothing
+			// Reset raster x counter
+			v.rasterX = 0;
 		}
 	},
 	R3 {
@@ -327,8 +328,9 @@ public enum CycleType {
 			refresh(v);
 			// increment sprite counters- "cycle 15" according to vic656x.txt
 			for (Sprite s : v.sprites) {
-				if (s.notAgain) {
+				if (s.dma && s.notAgain) {
 					s.mcbase += 2;
+					s.mcbase &= 0x3f;
 				}
 			}
 		}
@@ -345,11 +347,12 @@ public enum CycleType {
 			// TODO g fetch
 			// increment sprite counters continued- "cycle 16"
 			for (Sprite s : v.sprites) {
-				if (s.notAgain) {
+				if (s.dma && s.notAgain) {
 					s.mcbase++;
+					s.mcbase &= 0x3f;
 					if (s.mcbase == 63) {	// reached the end of sprite data
 						s.dma = false;
-						s.display = false;
+						v.spritesThisLine.remove(s);
 					}
 				}
 			}		

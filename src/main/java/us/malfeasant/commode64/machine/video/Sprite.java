@@ -5,7 +5,7 @@ package us.malfeasant.commode64.machine.video;
  * @author Malfeasant
  */
 class Sprite {
-	private final int which;
+	final int which;
 	
 	Sprite(int which) {
 		this.which = which;
@@ -18,9 +18,8 @@ class Sprite {
 	
 	boolean enabled;	// d015
 	boolean dma;		// fetch sprite data (stealing cycles from cpu as needed) and fill sequencer
-	boolean display;	// shift bits out of sequencer after x coord matches
 	boolean expandX;	// from register d01d
-	boolean nowExpandX;	// above is sampled at particular time, then kept here
+	boolean expandMid;	// keeps track if we're currently in the middle of an expanded pixel pair
 	boolean expandY;	// d017
 	boolean notAgain;	// keeps track of y expand state between lines
 	boolean firstLine;	// set when y position matches raster, resets several flags & counters
@@ -28,6 +27,9 @@ class Sprite {
 	boolean multicolor;	// d01c
 	boolean collidedS;	// d01e this sprite has collided with another sprite
 	boolean collidedV;	// d01f this sprite has collided with video matrix data
+	
+	int multiMid = -1;	// keeps track between cycles if we're in the middle of a mc pixel- holds color of previously
+	// decoded bit pair, or -1 if we are not in the middle
 	
 	int color;	// d027-2e
 	int x;	// d000/2/4 etc + d010

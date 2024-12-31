@@ -31,3 +31,6 @@ hs_err_pid*
 
 # maven shade junk
 /dependency-reduced-pom.xml
+
+# vscode junk
+/.vscode
